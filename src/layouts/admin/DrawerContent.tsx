@@ -33,7 +33,7 @@ const DrawerContent = ({ location, onNavigate }: DrawerContentProps) => (
     <Toolbar>
       <Logo sx={{ mr: 1, fontSize: 28 }} />
       <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600 }}>
-        Quiz Builder
+        Smarty Quiz
       </Typography>
     </Toolbar>
     <Divider />

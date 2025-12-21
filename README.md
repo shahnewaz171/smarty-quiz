@@ -1,4 +1,4 @@
-# Quiz Builder
+# Smarty Quiz
 
 A full-stack quiz application built with React and Express. Users can take quizzes, and admins can create and manage them.
 
@@ -35,7 +35,7 @@ cp .env.example .env
 Edit `server/.env` with your database credentials:
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/quiz_builder
+DATABASE_URL=postgresql://user:password@localhost:5432/smarty_quizz
 BETTER_AUTH_SECRET=your-secret-key-min-32-chars
 BETTER_AUTH_URL=http://localhost:3000
 PORT=3000
@@ -44,7 +44,7 @@ PORT=3000
 ### 3. Create Database
 
 ```bash
-createdb quiz_builder
+creatdb smarty_quizz
 cd server
 pnpm db:push
 ```
@@ -91,7 +91,7 @@ pnpm dev
 ## Project Structure
 
 ```
-quiz-builder/
+smarty-quiz/
 ├── src/                    # Client app
 │   ├── components/         # Reusable components
 │   ├── features/          # Feature modules

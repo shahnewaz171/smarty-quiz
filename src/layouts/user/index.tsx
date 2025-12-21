@@ -100,7 +100,7 @@ const UserLayout = () => {
         <Toolbar>
           <Logo sx={{ mr: 2, fontSize: 32 }} />
           <Typography variant="h6" component="h1" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            Quiz Builder
+            Smarty Quiz
           </Typography>
 
           <NavigationButtons currentPath={location.pathname} onNavigate={handleNavigate} />
@@ -152,7 +152,7 @@ const UserLayout = () => {
       >
         <Container maxWidth="lg">
           <Typography variant="body2" color="text.secondary" align="center">
-            © {new Date().getFullYear()} Quiz Builder. All rights reserved.
+            © {new Date().getFullYear()} Smarty Quiz. All rights reserved.
           </Typography>
         </Container>
       </Box>

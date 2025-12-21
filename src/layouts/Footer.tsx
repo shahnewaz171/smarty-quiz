@@ -21,7 +21,7 @@ const Footer = () => (
         alignItems="center"
       >
         <Typography variant="body2" color="text.secondary">
-          © {formatYear()} Quiz Builder. All rights reserved.
+          © {formatYear()} Smarty Quiz. All rights reserved.
         </Typography>
         <Stack direction="row" spacing={2}>
           <Link

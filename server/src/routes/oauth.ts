@@ -35,7 +35,7 @@ router.get('/callback', async (req, res) => {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>OAuth2 Tokens - Quiz Builder</title>
+          <title>OAuth2 Tokens - Smarty Quiz</title>
           <style>
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

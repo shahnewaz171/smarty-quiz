@@ -71,7 +71,7 @@ const Register = () => {
             Create Account
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 4 }}>
-            Sign up to get started with Quiz Builder
+            Sign up to get started with Smarty Quiz
           </Typography>
 
           {error && (

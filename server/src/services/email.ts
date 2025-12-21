@@ -67,7 +67,7 @@ export const sendEmail = async ({ to, subject, html }: EmailOptions): Promise<vo
 // email templates
 export const emailTemplates = {
   passwordReset: (resetUrl: string, userName?: string) => ({
-    subject: 'Reset Your Password - Quiz Builder',
+    subject: 'Reset Your Password - Smarty Quiz',
     html: `
       <!DOCTYPE html>
       <html>
@@ -135,7 +135,7 @@ export const emailTemplates = {
             
             <p>Hi ${userName || 'there'},</p>
             
-            <p>We received a request to reset your password for your Quiz Builder account. Click the button below to create a new password:</p>
+            <p>We received a request to reset your password for your Smarty Quiz account. Click the button below to create a new password:</p>
             
             <div style="text-align: center;">
               <a href="${resetUrl}" class="button">Reset Password</a>
@@ -150,8 +150,8 @@ export const emailTemplates = {
             <p>For security reasons, please don't share this link with anyone.</p>
             
             <div class="footer">
-              <p>This is an automated message from Quiz Builder. Please do not reply to this email.</p>
-              <p>&copy; ${new Date().getFullYear()} Quiz Builder. All rights reserved.</p>
+              <p>This is an automated message from Smarty Quiz. Please do not reply to this email.</p>
+              <p>&copy; ${new Date().getFullYear()} Smarty Quiz. All rights reserved.</p>
             </div>
           </div>
         </body>
@@ -160,7 +160,7 @@ export const emailTemplates = {
   }),
 
   passwordResetConfirmation: (userName?: string) => ({
-    subject: 'Password Successfully Reset - Quiz Builder',
+    subject: 'Password Successfully Reset - Smarty Quiz',
     html: `
       <!DOCTYPE html>
       <html>
@@ -240,14 +240,14 @@ export const emailTemplates = {
               <strong>🎉 Great news!</strong> Your password has been successfully reset.
             </div>
             
-            <p>You can now log in to your Quiz Builder account using your new password.</p>
+            <p>You can now log in to your Smarty Quiz account using your new password.</p>
             
             <div class="security-tips">
               <strong>🔒 Security Tips:</strong>
               <ul>
                 <li>If you didn't make this change, please contact us immediately</li>
                 <li>Never share your password with anyone</li>
-                <li>Use a unique password for your Quiz Builder account</li>
+                <li>Use a unique password for your Smarty Quiz account</li>
                 <li>Consider enabling two-factor authentication for extra security</li>
               </ul>
             </div>
@@ -255,8 +255,8 @@ export const emailTemplates = {
             <p>If you have any questions or concerns about your account security, please don't hesitate to contact our support team.</p>
             
             <div class="footer">
-              <p>This is an automated message from Quiz Builder. Please do not reply to this email.</p>
-              <p>&copy; ${new Date().getFullYear()} Quiz Builder. All rights reserved.</p>
+              <p>This is an automated message from Smarty Quiz. Please do not reply to this email.</p>
+              <p>&copy; ${new Date().getFullYear()} Smarty Quiz. All rights reserved.</p>
             </div>
           </div>
         </body>

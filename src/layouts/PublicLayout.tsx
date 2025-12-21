@@ -9,7 +9,7 @@ const PublicLayout = () => (
       <Toolbar>
         <Logo sx={{ mr: 2, fontSize: 32 }} />
         <Typography variant="h6" component="h1" sx={{ flexGrow: 1, fontWeight: 600 }}>
-          Quiz Builder
+          Smarty Quiz
         </Typography>
       </Toolbar>
     </AppBar>
