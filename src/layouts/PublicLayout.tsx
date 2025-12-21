@@ -1,22 +1,34 @@
 import { Outlet } from 'react-router';
-
+import { Box, AppBar, Toolbar, Typography, Container } from '@mui/material';
+import Logo from '@/components/icons/Logo';
 import Footer from '@/layouts/Footer';
 
 const PublicLayout = () => (
-  <div className="min-h-screen flex flex-col">
-    <header className="bg-blue-600 text-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-xl font-bold">React 19 Boilerplate</h1>
-      </div>
-    </header>
+  <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <AppBar position="static" component="header">
+      <Toolbar>
+        <Logo sx={{ mr: 2, fontSize: 32 }} />
+        <Typography variant="h6" component="h1" sx={{ flexGrow: 1, fontWeight: 600 }}>
+          Quiz Builder
+        </Typography>
+      </Toolbar>
+    </AppBar>
 
-    <main className="flex-grow container mx-auto p-4">
-      {/* child routes render here */}
+    <Container
+      component="main"
+      maxWidth="lg"
+      sx={{
+        flexGrow: 1,
+        py: 4,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       <Outlet />
-    </main>
+    </Container>
 
     <Footer />
-  </div>
+  </Box>
 );
 
 export default PublicLayout;

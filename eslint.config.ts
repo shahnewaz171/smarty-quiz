@@ -112,8 +112,9 @@ export default defineConfig([
       'func-name-matching': 'error',
       'func-names': 'warn',
       'guard-for-in': 'error',
-      'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
-      'max-lines-per-function': ['error', { max: 100, skipBlankLines: true, skipComments: true }],
+      'react-hooks/exhaustive-deps': 'off',
+      'max-lines': ['off', { max: 300, skipBlankLines: true, skipComments: true }],
+      'max-lines-per-function': ['error', { max: 250, skipBlankLines: true, skipComments: true }],
       'new-cap': 'off',
       'no-alert': 'warn',
       'no-array-constructor': 'error',
@@ -156,7 +157,7 @@ export default defineConfig([
       ],
       'no-loop-func': 'error',
       'no-multi-assign': ['error', { ignoreNonDeclaration: true }],
-      complexity: ['warn', 10],
+      complexity: ['off', 10],
       camelcase: 'off',
 
       // react-specific

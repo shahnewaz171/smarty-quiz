@@ -1,0 +1,71 @@
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import { auth } from './auth';
+import { requireAuth, requireAdmin } from './middleware/auth';
+import quizRoutes from './routes/quiz';
+import adminRoutes from './routes/admin';
+import oauthRoutes from './routes/oauth';
+import { HeadersInit } from './types';
+
+const app = express();
+const PORT = process.env.PORT || 4001;
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_APP_URL,
+    credentials: true
+  })
+);
+app.use(express.json());
+
+// authentication routes
+app.all('/api/auth/**', async (req, res) => {
+  const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+
+  const request = new Request(url, {
+    method: req.method,
+    headers: req.headers as HeadersInit,
+    body: ['POST', 'PUT'].includes(req.method) && req.body ? JSON.stringify(req.body) : undefined
+  });
+
+  const response = await auth.handler(request);
+
+  if (response) {
+    response.headers.forEach((value, key) => {
+      res.setHeader(key, value);
+    });
+    res.status(response.status);
+    const text = await response.text();
+    res.send(text);
+  } else {
+    res.status(404).end();
+  }
+});
+
+// protected routes
+app.use('/api/quizzes', requireAuth, quizRoutes);
+app.use('/api/admin', requireAdmin, adminRoutes);
+
+// OAuth2 routes for Gmail setup (development/setup only)
+app.use('/api/oauth', oauthRoutes);
+
+// health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not Found' });
+});
+
+// error handler
+app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.log('Server error:', err);
+  res.status(500).json({ error: 'Internal Server Error', message: err.message });
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
