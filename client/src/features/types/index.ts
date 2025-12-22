@@ -105,7 +105,6 @@ export interface QuizQuestionProgressProps {
 // timer hook types
 export interface UseQuizTimerProps {
   timeLimitInMinutes: number;
-  onTimeUp?: () => void;
 }
 
 export interface UseQuizTimerReturn {
@@ -114,5 +113,6 @@ export interface UseQuizTimerReturn {
   pauseTimer: () => void;
   resetTimer: () => void;
   isRunning: boolean;
+  isTimeUp: boolean;
   formattedTime: string;
 }

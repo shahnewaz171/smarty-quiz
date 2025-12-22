@@ -50,34 +50,10 @@ const QuizTaking = () => {
   });
   const { id: quiz_id, title, timeLimit, questions = [] } = quiz || {};
 
-  // submit quiz mutation
-  const handleSubmitQuiz = () => {
-    if (!quiz_id) return;
-
-    submitQuizMutation.mutate(
-      { quizId: quiz_id, data: { answers } },
-      {
-        onSuccess: (result) => {
-          navigate(`/quiz/${quiz_id}/result/${result.id}`);
-        }
-      }
-    );
-  };
-
   // web worker timer
-  const { timeRemaining, formattedTime, startTimer, isRunning } = useQuizTimer({
-    timeLimitInMinutes: timeLimit || 5,
-    onTimeUp: () => {
-      handleSubmitQuiz();
-    }
+  const { timeRemaining, formattedTime, startTimer, isRunning, isTimeUp } = useQuizTimer({
+    timeLimitInMinutes: timeLimit || 5
   });
-
-  // start timer on quiz load
-  useEffect(() => {
-    if (quiz_id && !isRunning && timeRemaining > 0) {
-      startTimer();
-    }
-  }, [quiz_id, isRunning, startTimer, timeRemaining]);
 
   // submit quiz mutation
   const submitQuizMutation = useMutation({
@@ -105,6 +81,35 @@ const QuizTaking = () => {
       showNotification(`Error submitting quiz: ${err.message}`, 'error');
     }
   });
+  const { isPending: isSubmitting } = submitQuizMutation;
+
+  // submit quiz mutation
+  const handleSubmitQuiz = () => {
+    if (!quiz_id) return;
+
+    submitQuizMutation.mutate(
+      { quizId: quiz_id, data: { answers } },
+      {
+        onSuccess: (result) => {
+          navigate(`/quiz/${quiz_id}/result/${result.id}`);
+        }
+      }
+    );
+  };
+
+  // start timer on quiz load
+  useEffect(() => {
+    if (quiz_id && !isRunning && timeRemaining > 0) {
+      startTimer();
+    }
+  }, [quiz_id, isRunning, timeRemaining]);
+
+  // auto submit on time up
+  useEffect(() => {
+    if (isTimeUp && !isSubmitting) {
+      handleSubmitQuiz();
+    }
+  }, [isTimeUp]);
 
   const handleAnswerChange = (questionId: string, selectedAnswer: string) => {
     setAnswers((prev) => {
@@ -166,7 +171,7 @@ const QuizTaking = () => {
       <Card>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            {currentQuestion.text}
+            {currentQuestion.questionText}
           </Typography>
           <Typography variant="body2" color="text.secondary" gutterBottom>
             {currentQuestion.points} {currentQuestion.points === 1 ? 'point' : 'points'}
@@ -226,9 +231,9 @@ const QuizTaking = () => {
                   color="success"
                   startIcon={<CheckCircleIcon />}
                   onClick={handleSubmitQuiz}
-                  disabled={submitQuizMutation.isPending}
+                  disabled={isSubmitting}
                 >
-                  {submitQuizMutation.isPending ? 'Submitting...' : 'Submit Quiz'}
+                  {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
                 </Button>
               )}
             </Box>

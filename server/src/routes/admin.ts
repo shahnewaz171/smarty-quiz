@@ -135,13 +135,10 @@ router.get('/statistics/quizzes', async (req: Request, res: Response) => {
     ]);
 
     // count quizzes by category
-    const quizzesByCategory = allQuizzes.reduce(
-      (acc, q) => {
-        acc[q.category] = (acc[q.category] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
+    const quizzesByCategory = allQuizzes.reduce((acc, q) => {
+      acc[q.category] = (acc[q.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
     // count quizzes by difficulty
     const quizzesByDifficulty = allQuizzes.reduce(
@@ -153,13 +150,10 @@ router.get('/statistics/quizzes', async (req: Request, res: Response) => {
     );
 
     // calculate average attempts per quiz
-    const attemptsPerQuiz = quizAttempts.reduce(
-      (acc, attempt) => {
-        acc[attempt.quizId] = (acc[attempt.quizId] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
+    const attemptsPerQuiz = quizAttempts.reduce((acc, attempt) => {
+      acc[attempt.quizId] = (acc[attempt.quizId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
     const averageAttemptsPerQuiz =
       totalQuizzesResult[0].count > 0

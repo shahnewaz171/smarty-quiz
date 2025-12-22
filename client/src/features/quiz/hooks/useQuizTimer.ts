@@ -8,9 +8,10 @@ const subscribe = (callback: () => void) => {
 };
 const getSnapshot = () => !document.hidden;
 
-const useQuizTimer = ({ timeLimitInMinutes, onTimeUp }: UseQuizTimerProps): UseQuizTimerReturn => {
+const useQuizTimer = ({ timeLimitInMinutes }: UseQuizTimerProps): UseQuizTimerReturn => {
   const [timeRemaining, setTimeRemaining] = useState(timeLimitInMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
+  const [isTimeUp, setIsTimeUp] = useState(false);
 
   const workerRef = useRef<Worker | null>(null);
   const startTimeRef = useRef<number | null>(null);
@@ -35,7 +36,7 @@ const useQuizTimer = ({ timeLimitInMinutes, onTimeUp }: UseQuizTimerProps): UseQ
         if (newTime === 0) {
           timerWorker.postMessage({ action: 'stop' });
           setIsRunning(false);
-          onTimeUp?.();
+          setIsTimeUp(true);
         }
         return newTime;
       });
@@ -63,7 +64,7 @@ const useQuizTimer = ({ timeLimitInMinutes, onTimeUp }: UseQuizTimerProps): UseQ
           if (newTime === 0 && workerRef.current) {
             workerRef.current.postMessage({ action: 'stop' });
             setIsRunning(false);
-            onTimeUp?.();
+            setIsTimeUp(true);
           }
           return newTime;
         });
@@ -96,6 +97,7 @@ const useQuizTimer = ({ timeLimitInMinutes, onTimeUp }: UseQuizTimerProps): UseQ
     }
     setTimeRemaining(timeLimitInMinutes * 60);
     setIsRunning(false);
+    setIsTimeUp(false);
     startTimeRef.current = null;
     lastVisibleTimeRef.current = null;
   };
@@ -106,6 +108,7 @@ const useQuizTimer = ({ timeLimitInMinutes, onTimeUp }: UseQuizTimerProps): UseQ
     pauseTimer,
     resetTimer,
     isRunning,
+    isTimeUp,
     formattedTime: formatQuizTime(timeRemaining)
   };
 };

@@ -11,6 +11,7 @@ export interface Question {
   quizId: string;
   type: QuestionType;
   text: string;
+  questionText?: string;
   options: Option[];
   correctAnswer: string;
   points: number;
