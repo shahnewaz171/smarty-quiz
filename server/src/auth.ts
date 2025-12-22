@@ -52,17 +52,15 @@ export const auth = betterAuth({
     }
   },
   advanced: {
-    // cookiePrefix: '',
-    // useSecureCookies: true,
+    useSecureCookies: process.env.NODE_ENV === 'production',
     cookies: {
       session_token: {
         name: 'session_token',
-        attributes: {}
+        attributes: {
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+          secure: process.env.NODE_ENV === 'production'
+        }
       }
     }
-    // crossSubDomainCookies: {
-    //   enabled: true,
-    //   domain: 'localhost'
-    // }
   }
 });
