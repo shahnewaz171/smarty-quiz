@@ -17,6 +17,9 @@ importers:
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
+      drizzle-kit:
+        specifier: ^0.31.7
+        version: 0.31.7
       drizzle-orm:
         specifier: ^0.44.7
         version: 0.44.7(@types/pg@8.15.6)(kysely@0.28.8)(pg@8.16.3)
@@ -51,9 +54,6 @@ importers:
       '@types/pg':
         specifier: ^8.15.6
         version: 8.15.6
-      drizzle-kit:
-        specifier: ^0.31.7
-        version: 0.31.7
       nodemon:
         specifier: ^3.1.11
         version: 3.1.11
