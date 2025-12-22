@@ -13,7 +13,8 @@ export default defineConfig({
     port: parseInt(process.env.PGPORT || '5432', 10),
     user: process.env.PGUSER!,
     password: process.env.PGPASSWORD!,
-    database: process.env.PGDATABASE!
+    database: process.env.PGDATABASE!,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
   },
   verbose: true,
   strict: true
