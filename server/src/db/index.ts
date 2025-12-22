@@ -12,7 +12,8 @@ const client = new Client({
   port: parseInt(process.env.PGPORT || '5432', 10),
   user: process.env.PGUSER,
   password: process.env.PGPASSWORD,
-  database: process.env.PGDATABASE
+  database: process.env.PGDATABASE,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 client
@@ -22,6 +23,7 @@ client
   })
   .catch((err) => {
     console.error('Database connection error:', err);
+    process.exit(1);
   });
 
 export const db = drizzle(client, { schema: { ...schema, ...relations } });
