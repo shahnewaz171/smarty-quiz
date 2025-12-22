@@ -2,8 +2,8 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
 import { config } from 'dotenv';
 
-import * as schema from './schema';
-import * as relations from './relations';
+import * as schema from './schema.js';
+import * as relations from './relations.js';
 
 config();
 

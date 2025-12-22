@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { eq, desc, asc, ilike, or, and, count } from 'drizzle-orm';
-import { db } from '../db';
-import { quiz, quizAttempt } from '../db/schema';
+import { db } from '../db/index.js';
+import { quiz, quizAttempt } from '../db/schema.js';
 
 const router = Router();
 

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { eq, desc, count, gte, or, and, ilike } from 'drizzle-orm';
-import { db } from '../db';
-import { quiz, question, quizAttempt, users } from '../db/schema';
+import { db } from '../db/index.js';
+import { quiz, question, quizAttempt, users } from '../db/schema.js';
 
 interface QuestionInput {
   id?: string;

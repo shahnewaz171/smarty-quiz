@@ -1,12 +1,12 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { auth } from './auth';
-import { requireAuth, requireAdmin } from './middleware/auth';
-import quizRoutes from './routes/quiz';
-import adminRoutes from './routes/admin';
-import oauthRoutes from './routes/oauth';
-import { HeadersInit } from './types';
+import { auth } from './auth.js';
+import { requireAuth, requireAdmin } from './middleware/auth.js';
+import quizRoutes from './routes/quiz.js';
+import adminRoutes from './routes/admin.js';
+import oauthRoutes from './routes/oauth.js';
+import { HeadersInit } from './types/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 4001;
