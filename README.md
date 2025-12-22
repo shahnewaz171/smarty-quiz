@@ -7,7 +7,7 @@ A full-stack quiz application built with React and Express. Users can take quizz
 The project has two separate parts:
 
 - **Client** (React + Vite) - runs on port `5173`
-- **Server** (Express + PostgreSQL) - runs on port `3000`
+- **Server** (Express + PostgreSQL) - runs on port `4001`
 - Each part has its own dependencies
 
 ## Getting Started
@@ -37,8 +37,8 @@ Edit `server/.env` with your database credentials:
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/smarty_quizz
 BETTER_AUTH_SECRET=your-secret-key-min-32-chars
-BETTER_AUTH_URL=http://localhost:3000
-PORT=3000
+BETTER_AUTH_URL=http://localhost:4001
+PORT=4001
 ```
 
 ### 3. Create Database
@@ -67,8 +67,8 @@ pnpm dev
 ### 5. Access Application
 
 - Frontend: http://localhost:5173
-- API: http://localhost:3000
-- Health Check: http://localhost:3000/health
+- API: http://localhost:4001
+- Health Check: http://localhost:4001/health
 
 ## Tech Stack
 
@@ -201,17 +201,17 @@ PGPASSWORD=your_password
 PGDATABASE=quiz_builder
 
 BETTER_AUTH_SECRET=your-secret-key-min-32-chars
-BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:4001
 CLIENT_APP_URL=http://localhost:5173
 
-PORT=3000
+PORT=4001
 NODE_ENV=development
 ```
 
 **Client** (`.env` - optional):
 
 ```env
-VITE_API_BASE_URL=http://localhost:3000
+VITE_API_BASE_URL=http://localhost:4001
 ```
 
 ## Features
