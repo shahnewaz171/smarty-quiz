@@ -32,8 +32,7 @@ const createTransporter = () => {
       user: process.env.GMAIL_USER,
       clientId: process.env.GMAIL_OAUTH2_CLIENT_ID,
       clientSecret: process.env.GMAIL_OAUTH2_CLIENT_SECRET,
-      refreshToken: process.env.GMAIL_OAUTH2_REFRESH_TOKEN,
-      accessToken: process.env.GMAIL_OAUTH2_ACCESS_TOKEN
+      refreshToken: process.env.GMAIL_OAUTH2_REFRESH_TOKEN
     }
   });
 };
