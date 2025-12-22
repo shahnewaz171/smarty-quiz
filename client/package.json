@@ -3,6 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "A full-stack quiz application with React and Express",
+  "author": "Shahnewaz",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
