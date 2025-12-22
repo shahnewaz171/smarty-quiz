@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 
 import * as schema from './schema.js';
 import * as relations from './relations.js';
+import { isProduction } from '../utils/env.js';
 
 config();
 
@@ -13,7 +14,7 @@ const client = new Client({
   user: process.env.PGUSER,
   password: process.env.PGPASSWORD,
   database: process.env.PGDATABASE,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: isProduction ? { rejectUnauthorized: false } : false
 });
 
 client

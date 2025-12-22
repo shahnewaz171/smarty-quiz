@@ -3,6 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './db/index.js';
 import * as schema from './db/schema.js';
 import { sendEmail, emailTemplates } from './services/email.js';
+import { isProduction } from './utils/env.js';
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -52,15 +53,21 @@ export const auth = betterAuth({
     }
   },
   advanced: {
-    useSecureCookies: process.env.NODE_ENV === 'production',
+    useSecureCookies: isProduction,
+    // cookiePrefix: '',
+    // useSecureCookies: true,
     cookies: {
       session_token: {
         name: 'session_token',
         attributes: {
-          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-          secure: process.env.NODE_ENV === 'production'
+          sameSite: isProduction ? 'none' : 'lax',
+          secure: isProduction
         }
       }
+      // crossSubDomainCookies: {
+      //   enabled: true,
+      //   domain: 'localhost'
+      // }
     }
   }
 });
