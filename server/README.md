@@ -216,7 +216,7 @@ See [package.json](package.json) for complete list.
 2. Set environment variables in Heroku dashboard
 3. Deploy:
    ```bash
-   git push heroku master
+   git subtree push --prefix server heroku master
    ```
 4. Run migrations:
    ```bash
