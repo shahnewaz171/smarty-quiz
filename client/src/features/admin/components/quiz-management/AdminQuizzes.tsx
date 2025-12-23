@@ -70,6 +70,7 @@ const AdminQuizzes = ({
       queryClient.invalidateQueries({ queryKey: ['admin', 'quizzes'] });
       queryClient.setQueryData(['admin', 'quizzes', 'detail', updatedQuiz.id], updatedQuiz);
       queryClient.invalidateQueries({ queryKey: ['admin', 'statistics'] });
+      queryClient.invalidateQueries({ queryKey: ['quizzes', 'list'] });
     }
   });
 
