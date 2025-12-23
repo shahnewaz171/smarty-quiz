@@ -74,7 +74,9 @@ const QuestionBreakdown = ({ questions, answers }: QuestionBreakdownProps) => (
                   <Typography variant="body2" color="text.secondary">
                     Explanation:
                   </Typography>
-                  <Typography variant="body2">{explanation}</Typography>
+                  <Typography variant="body2" className="whitespace-pre-line">
+                    {explanation}
+                  </Typography>
                 </Box>
               )}
             </Stack>
