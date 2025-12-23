@@ -221,6 +221,7 @@ See [package.json](package.json) for complete list.
 4. Run migrations:
    ```bash
    heroku run pnpm db:push
+   heroku run pnpm db:push --app app_name
    ```
 
 ## License
