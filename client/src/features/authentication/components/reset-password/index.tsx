@@ -59,20 +59,20 @@ const ResetPassword = () => {
         },
         body: JSON.stringify({
           newPassword: data.password,
+          revokeOtherSessions: true,
           token
         }),
         credentials: 'include'
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        navigate('/login', {
+          state: { message: 'Password reset successful. Please login with your new password.' }
+        });
+      } else {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to reset password');
+        setError(errorData.message || 'Failed to reset password');
       }
-
-      // Redirect to login page on success
-      navigate('/login', {
-        state: { message: 'Password reset successful. Please login with your new password.' }
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to reset password');
     } finally {

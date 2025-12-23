@@ -21,25 +21,33 @@ app.use(express.json());
 
 // authentication routes
 app.all('/api/auth/**', async (req, res) => {
-  const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+  try {
+    const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
 
-  const request = new Request(url, {
-    method: req.method,
-    headers: req.headers as HeadersInit,
-    body: ['POST', 'PUT'].includes(req.method) && req.body ? JSON.stringify(req.body) : undefined
-  });
+    const request = new Request(url, {
+      method: req.method,
+      headers: req.headers as HeadersInit,
+      body: ['POST', 'PUT'].includes(req.method) && req.body ? JSON.stringify(req.body) : undefined
+    });
 
-  const response = await auth.handler(request);
+    const response = await auth.handler(request);
 
-  if (response) {
+    if (!response) {
+      return res.status(404).json({ error: 'Authentication endpoint not found' });
+    }
+
     response.headers.forEach((value, key) => {
       res.setHeader(key, value);
     });
-    res.status(response.status);
+
     const text = await response.text();
-    res.send(text);
-  } else {
-    res.status(404).end();
+    return res.status(response.status).send(text);
+  } catch (error) {
+    console.error('Authentication error:', error);
+    return res.status(500).json({
+      error: 'Authentication failed',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
