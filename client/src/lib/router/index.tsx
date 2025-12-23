@@ -33,7 +33,7 @@ const router = createBrowserRouter([
     path: '/',
     ErrorBoundary: AppErrorFallback,
     children: [
-      { index: true, element: <Navigate to="/login" replace /> },
+      { index: true, element: <Navigate to="/quiz" replace /> },
       {
         path: '/admin',
         element: (
