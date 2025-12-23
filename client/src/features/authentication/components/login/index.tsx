@@ -33,12 +33,9 @@ const Login = () => {
 
     startTransition(async () => {
       await signIn.email(data, {
-        onSuccess(res) {
-          console.log('Login successful:', res);
-        },
+        onSuccess() {},
         onError(err) {
           const { statusText, message } = err.error;
-          console.log('Login error:', err);
           setError(message || statusText || 'An error occurred during login');
         }
       });

@@ -40,13 +40,12 @@ const Register = () => {
     setIsLoading(true);
 
     await signUp.email(data, {
-      onSuccess(res) {
-        const { user } = res.data || {};
-        console.log('Sign up successful:', user);
+      onSuccess() {
+        // const { user } = res.data || {};
+        // console.log('Sign up successful:', user);
       },
       onError(err) {
         const { statusText, message } = err.error;
-        console.log('Sign up error:', err);
         setError(message || statusText || 'An error occurred during sign up');
       }
     });

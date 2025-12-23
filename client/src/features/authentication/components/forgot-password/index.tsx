@@ -39,13 +39,11 @@ const ForgotPassword = () => {
           redirectTo: `${window.location.origin}/reset-password`
         },
         {
-          onSuccess(res) {
-            console.log('Request password reset successful:', res);
+          onSuccess() {
             setSuccess(true);
           },
           onError(err) {
             const { statusText, message } = err.error;
-            console.log('Request password reset error:', err);
             setError(message || statusText || 'Failed to send reset email');
           }
         }

@@ -14,7 +14,6 @@ export const fetchJson = async <T>(path: string, options?: RequestInit): Promise
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: response.statusText }));
-    console.log('Fetch error:', response);
     throw new Error(error.message || 'An error occurred while fetching data');
   }
 
