@@ -1,4 +1,4 @@
-name: (publish) Release
+name: (Test) Dev
 
 on:
   pull_request:
@@ -24,11 +24,6 @@ jobs:
     if: ${{ needs.detect-changes.outputs.server == 'true' || needs.detect-changes.outputs.client == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Log Node & OS versions
-        run: |
-          node -v
-          cat /etc/os-release
-
       - name: Checkout source code
         uses: actions/checkout@v4
 
@@ -47,14 +42,3 @@ jobs:
       - name: Build Server
         if: ${{ needs.detect-changes.outputs.server == 'true' }}
         run: pnpm --filter server run build
-
-      # deploy client to vercel
-      - name: Deploy Client
-        if: ${{ needs.detect-changes.outputs.client == 'true' }}
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          npm install --global vercel@latest
-          vercel pull --yes --environment=production --token=$VERCEL_TOKEN --cwd ./client
-          vercel build --prod --token=$VERCEL_TOKEN --cwd ./client
-          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --cwd ./client
