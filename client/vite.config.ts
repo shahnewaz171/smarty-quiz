@@ -36,12 +36,12 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router'],
           'mui-core': ['@mui/material', '@emotion/react', '@emotion/styled'],
           'mui-icons': ['@mui/icons-material'],
+          'mui-charts': ['@mui/x-charts'],
           'form-libs': ['react-hook-form', '@hookform/resolvers', 'zod'],
           'query-libs': ['@tanstack/react-query', '@tanstack/react-query-devtools'],
           'auth-libs': ['better-auth/react']
         }
-      },
-      external: []
+      }
     }
   }
 });
