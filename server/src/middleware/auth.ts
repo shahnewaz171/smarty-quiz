@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { auth } from '../auth.js';
+import { auth } from '../lib/auth.js';
 
 type SessionResult = Awaited<ReturnType<typeof auth.api.getSession>>;
 type SessionUser = NonNullable<SessionResult>['user'];

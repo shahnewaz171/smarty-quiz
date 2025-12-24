@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { auth } from './auth.js';
+import { auth } from './lib/auth.js';
 import { requireAuth, requireAdmin } from './middleware/auth.js';
 import quizRoutes from './routes/quiz.js';
 import adminRoutes from './routes/admin.js';
