@@ -22,6 +22,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 import { useAuth, useRole } from '@/lib/auth/better-auth/hooks';
 import { authApi } from '@/features/authentication/services/auth';
+import { showNotification } from '@/lib/sonner';
 import DrawerContent from '@/layouts/admin/DrawerContent';
 
 const drawerWidth = 240;
@@ -55,7 +56,7 @@ const AdminLayout = () => {
         navigate('/login');
       })
       .catch((error: Error) => {
-        console.error('Logout failed:', error);
+        showNotification(error instanceof Error ? error.message : 'Logout failed', 'error');
       });
     handleMenuClose();
   };

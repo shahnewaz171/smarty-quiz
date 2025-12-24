@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Alert, Box, Card, CardContent, Link, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Link, Stack, Typography } from '@mui/material';
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router';
@@ -7,6 +7,7 @@ import { z } from 'zod';
 
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/form/Input';
+import { showNotification } from '@/lib/sonner';
 
 const resetPasswordSchema = z
   .object({
@@ -22,14 +23,14 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const token = searchParams.get('token');
+
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid or missing reset token');
+      showNotification('Invalid or missing reset token', 'error');
     }
   }, [token]);
 
@@ -43,11 +44,10 @@ const ResetPassword = () => {
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) {
-      setError('Invalid or missing reset token');
+      showNotification('Invalid or missing reset token', 'error');
       return;
     }
 
-    setError(null);
     setIsLoading(true);
 
     try {
@@ -71,10 +71,10 @@ const ResetPassword = () => {
         });
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to reset password');
+        showNotification(errorData.message || 'Failed to reset password', 'error');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to reset password');
+      showNotification(err instanceof Error ? err.message : 'Failed to reset password', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -99,12 +99,6 @@ const ResetPassword = () => {
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 4 }}>
             Enter your new password below.
           </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <Stack spacing={3}>

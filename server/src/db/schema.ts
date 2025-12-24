@@ -112,3 +112,18 @@ export const quizAttempt = pgTable('quiz_attempt', {
   completedAt: timestamp('completedAt').notNull(),
   createdAt: timestamp('createdAt').notNull().defaultNow()
 });
+
+export const activeQuizSession = pgTable('active_quiz_session', {
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  quizId: text('quizId')
+    .notNull()
+    .references(() => quiz.id, { onDelete: 'cascade' }),
+  userId: text('userId')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  startedAt: timestamp('startedAt').notNull().defaultNow(),
+  expiresAt: timestamp('expiresAt').notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow()
+});

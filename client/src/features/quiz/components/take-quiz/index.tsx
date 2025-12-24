@@ -1,40 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useEffectEvent } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  FormControl,
-  LinearProgress,
-  Chip,
-  Paper
-} from '@mui/material';
-import TimerIcon from '@mui/icons-material/Timer';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { Box } from '@mui/material';
 
 import { fetchQuizById, submitQuiz } from '@/features/api/quiz';
 import { showNotification } from '@/lib/sonner';
 import getProgressCalculation from '@/features/quiz/helpers/getProgressCalculation';
 import QuizQuestionProgress from '@/features/quiz/components/take-quiz/QuizQuestionProgress';
 import useQuizTimer from '@/features/quiz/hooks/useQuizTimer';
+import useQuizAttempts from '@/features/quiz/hooks/useQuizAttempts';
 import LoadingSpinner from '@/components/loader/LoadingSpinner';
 import APIErrorAlert from '@/layouts/APIErrorAlert';
-import type { Answer, QuizResult } from '@/types/Quiz';
+import type { Answer, QuizResult, SubmitQuizRequest } from '@/types/Quiz';
+import NoActiveSessionPage from '@/features/quiz/components/take-quiz/NoActiveSessionPage';
+import MaxAttemptsReachedPage from '@/features/quiz/components/take-quiz/MaxAttemptsReachedPage';
+import { QuizHeader } from '@/features/quiz/components/take-quiz/QuizHeader';
+import { QuizQuestionCard } from '@/features/quiz/components/take-quiz/QuizQuestionCard';
 
 const QuizTaking = () => {
-  // params
   const { quizId } = useParams<{ quizId: string }>();
 
-  // state
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
+  const autoSubmittedRef = useRef(false);
+  const isSubmittingRef = useRef(false);
   const navigate = useNavigate();
+
+  // query client
   const queryClient = useQueryClient();
 
   // quiz details
@@ -45,22 +37,26 @@ const QuizTaking = () => {
   } = useQuery({
     queryKey: ['quizzes', 'detail', quizId],
     queryFn: ({ queryKey }) => fetchQuizById(queryKey[2] as string),
-    enabled: !!quizId,
-    staleTime: 10 * 60 * 1000
+    enabled: !!quizId
   });
-  const { id: quiz_id, title, timeLimit, questions = [] } = quiz || {};
+
+  const { id: quiz_id, title, timeLimit, questions = [], activeSession } = quiz || {};
+  const { id: sessionId, startedAt, expiresAt } = activeSession || {};
+  const { isMaxAttemptsReached, attemptCount } = useQuizAttempts(quiz);
+
+  const hasActiveSession = !!activeSession;
 
   // web worker timer
   const { timeRemaining, formattedTime, startTimer, isRunning, isTimeUp } = useQuizTimer({
-    timeLimitInMinutes: timeLimit || 5
+    timeLimitInMinutes: timeLimit || 5,
+    expiresAt,
+    serverTime: sessionId ? new Date().toISOString() : null
   });
 
   // submit quiz mutation
   const submitQuizMutation = useMutation({
-    mutationFn: async ({ quizId: id, data }: { quizId: string; data: { answers: Answer[] } }) => {
+    mutationFn: async ({ quizId: id, data }: { quizId: string; data: SubmitQuizRequest }) => {
       const attempt = await submitQuiz(id, data);
-      const percentage = attempt.score;
-      const passed = attempt.passed;
 
       if (!attempt.quiz) {
         throw new Error('Quiz data not included in response');
@@ -69,13 +65,20 @@ const QuizTaking = () => {
       return {
         ...attempt,
         quiz: attempt.quiz,
-        percentage,
-        passed
+        percentage: attempt.score,
+        passed: attempt.passed
       } as QuizResult;
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['quiz-attempts'] });
-      queryClient.setQueryData(['quiz-results', result.id], result);
+      queryClient.invalidateQueries({ queryKey: ['quizzes', 'detail', quizId] });
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          Array.isArray(query.queryKey) &&
+          query.queryKey[0] === 'quizzes' &&
+          query.queryKey[1] === 'list'
+      });
+      queryClient.invalidateQueries({ queryKey: ['quiz-results', result.id] });
     },
     onError: (err) => {
       showNotification(`Error submitting quiz: ${err.message}`, 'error');
@@ -83,33 +86,63 @@ const QuizTaking = () => {
   });
   const { isPending: isSubmitting } = submitQuizMutation;
 
-  // submit quiz mutation
-  const handleSubmitQuiz = () => {
-    if (!quiz_id) return;
+  const onAutoSubmit = useEffectEvent(() => {
+    if (!quiz_id || !startedAt || isSubmittingRef.current) return;
 
+    isSubmittingRef.current = true;
     submitQuizMutation.mutate(
-      { quizId: quiz_id, data: { answers } },
+      {
+        quizId: quiz_id,
+        data: { answers, startedAt }
+      },
       {
         onSuccess: (result) => {
+          isSubmittingRef.current = false;
           navigate(`/quiz/${quiz_id}/result/${result.id}`);
+        },
+        onError: () => {
+          isSubmittingRef.current = false;
+        }
+      }
+    );
+  });
+
+  // submit quiz
+  const handleSubmitQuiz = () => {
+    if (!quiz_id || !startedAt || isSubmittingRef.current) return;
+
+    isSubmittingRef.current = true;
+    submitQuizMutation.mutate(
+      {
+        quizId: quiz_id,
+        data: { answers, startedAt }
+      },
+      {
+        onSuccess: (result) => {
+          isSubmittingRef.current = false;
+          navigate(`/quiz/${quiz_id}/result/${result.id}`);
+        },
+        onError: () => {
+          isSubmittingRef.current = false;
         }
       }
     );
   };
 
-  // start timer on quiz load
+  // timer management and auto-submit
   useEffect(() => {
-    if (quiz_id && !isRunning && timeRemaining > 0) {
+    // start timer when session exists
+    if (hasActiveSession && !isRunning && timeRemaining > 0 && !isTimeUp) {
       startTimer();
+      return;
     }
-  }, [quiz_id, isRunning, timeRemaining]);
 
-  // auto submit on time up
-  useEffect(() => {
-    if (isTimeUp && !isSubmitting) {
-      handleSubmitQuiz();
+    // auto submit on time up
+    if (isTimeUp && hasActiveSession && !autoSubmittedRef.current && startedAt) {
+      autoSubmittedRef.current = true;
+      onAutoSubmit();
     }
-  }, [isTimeUp]);
+  }, [hasActiveSession, isRunning, timeRemaining, isTimeUp, startedAt]);
 
   const handleAnswerChange = (questionId: string, selectedAnswer: string) => {
     setAnswers((prev) => {
@@ -144,6 +177,14 @@ const QuizTaking = () => {
     return <APIErrorAlert message="Failed to load quiz. Please try again." />;
   }
 
+  if (isMaxAttemptsReached) {
+    return <MaxAttemptsReachedPage attemptCount={attemptCount} />;
+  }
+
+  if (!hasActiveSession) {
+    return <NoActiveSessionPage />;
+  }
+
   // progress calculation
   const { isLastQuestion, progress, currentQuestion, currentAnswer } = getProgressCalculation({
     currentQuestionIndex,
@@ -153,93 +194,27 @@ const QuizTaking = () => {
 
   return (
     <Box>
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5">{title}</Typography>
-          <Chip
-            icon={<TimerIcon />}
-            label={formattedTime}
-            color={timeRemaining < 60 ? 'error' : 'primary'}
-          />
-        </Box>
-        <LinearProgress variant="determinate" value={progress} />
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Question {currentQuestionIndex + 1} of {questions.length}
-        </Typography>
-      </Paper>
+      <QuizHeader
+        title={title || ''}
+        formattedTime={formattedTime}
+        timeRemaining={timeRemaining}
+        currentQuestionIndex={currentQuestionIndex}
+        totalQuestions={questions.length}
+        progress={progress}
+      />
 
-      <Card>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            {currentQuestion.questionText}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            {currentQuestion.points} {currentQuestion.points === 1 ? 'point' : 'points'}
-          </Typography>
-
-          {/* options */}
-          <FormControl component="fieldset" sx={{ mt: 3, width: '100%' }}>
-            <RadioGroup
-              value={currentAnswer?.selectedAnswer || ''}
-              onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-            >
-              {currentQuestion.options.map((option) => (
-                <FormControlLabel
-                  key={option.id}
-                  value={option.id}
-                  control={<Radio />}
-                  label={option.text}
-                  sx={{
-                    border: 1,
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    mb: 1,
-                    px: 2,
-                    py: 1,
-                    '&:hover': {
-                      bgcolor: 'action.hover'
-                    }
-                  }}
-                />
-              ))}
-            </RadioGroup>
-          </FormControl>
-
-          {/* buttons */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-            <Box>
-              <Button
-                variant="outlined"
-                onClick={handlePrevious}
-                disabled={currentQuestionIndex === 0}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="contained"
-                className="!ml-4"
-                onClick={handleNext}
-                disabled={isLastQuestion}
-              >
-                Next
-              </Button>
-            </Box>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              {isLastQuestion && (
-                <Button
-                  variant="contained"
-                  color="success"
-                  startIcon={<CheckCircleIcon />}
-                  onClick={handleSubmitQuiz}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
-                </Button>
-              )}
-            </Box>
-          </Box>
-        </CardContent>
-      </Card>
+      <QuizQuestionCard
+        currentQuestion={currentQuestion}
+        currentAnswer={currentAnswer}
+        isLastQuestion={isLastQuestion}
+        currentQuestionIndex={currentQuestionIndex}
+        totalQuestions={questions.length}
+        isSubmitting={isSubmitting}
+        onAnswerChange={handleAnswerChange}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onSubmit={handleSubmitQuiz}
+      />
 
       {/* question progress */}
       <QuizQuestionProgress

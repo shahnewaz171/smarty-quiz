@@ -61,7 +61,7 @@ const QuizHistory = () => {
 
       <Stack spacing={2}>
         {attempts?.map((attempt) => {
-          const { id, score, quizId, completedAt, correctAnswers, totalQuestions } = attempt;
+          const { id, score, quizId, completedAt, correctAnswers, totalQuestions, quiz } = attempt;
           const passed = score >= 70;
 
           return (
@@ -89,7 +89,7 @@ const QuizHistory = () => {
                 >
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="h6" gutterBottom>
-                      Quiz #{quizId}
+                      {quiz?.title || 'Untitled Quiz'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Completed on {formatDate(completedAt)}

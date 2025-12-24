@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Box, Card, CardContent, Typography, Button, Chip, Paper, Divider } from '@mui/material';
@@ -7,13 +8,18 @@ import HomeIcon from '@mui/icons-material/Home';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 import { fetchQuizAttemptById } from '@/features/api/quiz';
+import useQuizAttempts from '@/features/quiz/hooks/useQuizAttempts';
 import APIErrorAlert from '@/layouts/APIErrorAlert';
 import LoadingSpinner from '@/components/loader/LoadingSpinner';
 import QuestionBreakdown from '@/features/quiz/components/result/QuestionBreakdown';
 import type { QuizResult as QuizResultType } from '@/types/Quiz';
+import { MaxAttemptsModal, StartQuizModal } from '@/features/quiz/components/modals/quiz';
 
 const QuizResult = () => {
   const { quizId, resultId } = useParams<{ quizId: string; resultId: string }>();
+
+  const [showMaxAttemptsModal, setShowMaxAttemptsModal] = useState(false);
+  const [showRetakeConfirmModal, setShowRetakeConfirmModal] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -38,7 +44,20 @@ const QuizResult = () => {
   });
   const { percentage, passed, quiz, correctAnswers, totalQuestions, answers } = result || {};
 
+  // quiz attempts hook
+  const { isMaxAttemptsReached, attemptCount, attemptsRemaining } = useQuizAttempts(quiz);
+
+  // retake quiz
   const handleRetakeQuiz = () => {
+    if (isMaxAttemptsReached) {
+      setShowMaxAttemptsModal(true);
+    } else {
+      setShowRetakeConfirmModal(true);
+    }
+  };
+
+  const handleConfirmRetake = () => {
+    setShowRetakeConfirmModal(false);
     navigate(`/quiz/${quizId}`);
   };
 
@@ -141,6 +160,22 @@ const QuizResult = () => {
           Retake Quiz
         </Button>
       </Box>
+
+      {/* modals */}
+      <MaxAttemptsModal
+        isOpen={showMaxAttemptsModal}
+        attemptCount={attemptCount}
+        onClose={() => setShowMaxAttemptsModal(false)}
+      />
+      <StartQuizModal
+        isOpen={showRetakeConfirmModal}
+        quizTitle={quiz?.title || ''}
+        questionCount={quiz?.questions.length || 0}
+        timeLimit={quiz?.timeLimit || 0}
+        attemptsRemaining={attemptsRemaining}
+        onClose={() => setShowRetakeConfirmModal(false)}
+        onConfirm={handleConfirmRetake}
+      />
     </Box>
   );
 };

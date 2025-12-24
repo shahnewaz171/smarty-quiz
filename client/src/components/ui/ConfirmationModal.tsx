@@ -36,7 +36,11 @@ const ConfirmationModal = ({
       <Typography>{subTitle}</Typography>
     </DialogContent>
     <DialogActions>
-      <Button onClick={onClose}>{closeLabel}</Button>
+      {closeLabel && (
+        <Button disabled={isLoading} onClick={onClose}>
+          {closeLabel}
+        </Button>
+      )}
       <Button onClick={onConfirm} color="error" variant={variant} disabled={isLoading}>
         {`${actionLabel} ${isLoading ? '...' : ''}`}
       </Button>

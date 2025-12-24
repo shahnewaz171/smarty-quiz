@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Alert, Box, Card, CardContent, Link, Stack, Typography } from '@mui/material';
-import { useState, useTransition } from 'react';
+import { Box, Card, CardContent, Link, Stack, Typography } from '@mui/material';
+import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink } from 'react-router';
 import { z } from 'zod';
@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/form/Input';
 import { signIn } from '@/lib/auth/better-auth/client';
+import { showNotification } from '@/lib/sonner';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -17,7 +18,6 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login = () => {
-  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const {
@@ -29,16 +29,18 @@ const Login = () => {
   });
 
   const onSubmit = (data: LoginFormData) => {
-    setError(null);
-
     startTransition(async () => {
-      await signIn.email(data, {
-        onSuccess() {},
-        onError(err) {
-          const { statusText, message } = err.error;
-          setError(message || statusText || 'An error occurred during login');
-        }
-      });
+      try {
+        await signIn.email(data, {
+          onSuccess() {},
+          onError(err) {
+            const { statusText, message } = err.error;
+            showNotification(message || statusText || 'An error occurred during login', 'error');
+          }
+        });
+      } catch {
+        showNotification('An unexpected error occurred. Please try again.', 'error');
+      }
     });
   };
 
@@ -61,12 +63,6 @@ const Login = () => {
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 4 }}>
             Sign in to your account to continue
           </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <Stack spacing={3}>

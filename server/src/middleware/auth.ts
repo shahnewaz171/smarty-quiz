@@ -44,7 +44,7 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
     authReq.session = session.session;
 
     const user = authReq.user as Record<string, unknown>;
-    const userRole = user?.role as string[] | string | undefined;
+    const userRole = user?.role as string[] | string | null;
 
     if (!userRole) {
       return res.status(403).json({ error: 'Forbidden - No role assigned' });

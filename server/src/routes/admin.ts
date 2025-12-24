@@ -441,7 +441,7 @@ router.get('/users', async (req: Request, res: Response) => {
     const result = usersList.map((u) => ({
       ...u,
       attemptCount: u.quizAttempts.length,
-      quizAttempts: undefined
+      quizAttempts: null
     }));
 
     return res.json(result);

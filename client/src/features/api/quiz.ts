@@ -22,7 +22,7 @@ export const fetchQuizById = (quizId: string): Promise<Quiz> =>
 export const submitQuiz = (quizId: string, data: SubmitQuizRequest): Promise<QuizAttempt> => {
   const payload = {
     answers: data.answers,
-    startedAt: data.startedAt || new Date().toISOString()
+    startedAt: data.startedAt
   };
 
   return fetchJson<QuizAttempt>(`/api/quizzes/${quizId}/submit`, {
@@ -36,3 +36,13 @@ export const fetchUserQuizAttempts = (userId: string): Promise<QuizAttempt[]> =>
 
 export const fetchQuizAttemptById = (attemptId: string): Promise<QuizAttempt> =>
   fetchJson<QuizAttempt>(`/api/quizzes/attempt/${attemptId}`);
+
+export const startQuizSession = (quizId: string) =>
+  fetchJson<{
+    id: string;
+    startedAt: string;
+    expiresAt: string;
+    serverTime: string;
+  }>(`/api/quizzes/${quizId}/start`, {
+    method: 'POST'
+  });

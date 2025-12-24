@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Alert, Box, Card, CardContent, Link, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Link, Stack, Typography } from '@mui/material';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink } from 'react-router';
@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/form/Input';
 import { requestPasswordReset } from '@/lib/auth/better-auth/client';
+import { showNotification } from '@/lib/sonner';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address')
@@ -16,7 +17,6 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 const ForgotPassword = () => {
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -29,25 +29,28 @@ const ForgotPassword = () => {
   });
 
   const onSubmit = (data: ForgotPasswordFormData) => {
-    setError(null);
     setSuccess(false);
 
     startTransition(async () => {
-      await requestPasswordReset(
-        {
-          email: data.email,
-          redirectTo: `${window.location.origin}/reset-password`
-        },
-        {
-          onSuccess() {
-            setSuccess(true);
+      try {
+        await requestPasswordReset(
+          {
+            email: data.email,
+            redirectTo: `${window.location.origin}/reset-password`
           },
-          onError(err) {
-            const { statusText, message } = err.error;
-            setError(message || statusText || 'Failed to send reset email');
+          {
+            onSuccess() {
+              setSuccess(true);
+            },
+            onError(err) {
+              const { statusText, message } = err.error;
+              showNotification(message || statusText || 'Failed to send reset email', 'error');
+            }
           }
-        }
-      );
+        );
+      } catch {
+        showNotification('An unexpected error occurred. Please try again.', 'error');
+      }
     });
   };
 
@@ -103,12 +106,6 @@ const ForgotPassword = () => {
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 4 }}>
             Enter your email address and we&apos;ll send you a link to reset your password.
           </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <Stack spacing={3}>

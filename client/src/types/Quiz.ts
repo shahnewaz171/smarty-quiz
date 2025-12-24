@@ -32,6 +32,13 @@ export interface Quiz {
   createdAt: string;
   updatedAt: string;
   isPublished: boolean;
+  activeSession?: {
+    id: string;
+    startedAt: string;
+    expiresAt: string;
+  } | null;
+  attemptCount?: number;
+  maxAttempts?: number;
 }
 
 export interface Answer {
@@ -75,7 +82,7 @@ export interface UpdateQuizRequest extends Partial<CreateQuizRequest> {
 
 export interface SubmitQuizRequest {
   answers: Answer[];
-  startedAt?: string;
+  startedAt: string;
 }
 
 export interface QuizListFilters {

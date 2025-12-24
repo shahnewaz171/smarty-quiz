@@ -8,19 +8,49 @@ const subscribe = (callback: () => void) => {
 };
 const getSnapshot = () => !document.hidden;
 
-const useQuizTimer = ({ timeLimitInMinutes }: UseQuizTimerProps): UseQuizTimerReturn => {
+interface UseServerTimerProps {
+  expiresAt?: string;
+  serverTime?: string | null;
+}
+
+const useQuizTimer = ({
+  timeLimitInMinutes,
+  expiresAt,
+  serverTime
+}: UseQuizTimerProps & UseServerTimerProps): UseQuizTimerReturn => {
   const [timeRemaining, setTimeRemaining] = useState(timeLimitInMinutes * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [isTimeUp, setIsTimeUp] = useState(false);
 
   const workerRef = useRef<Worker | null>(null);
-  const startTimeRef = useRef<number | null>(null);
-  const lastVisibleTimeRef = useRef<number | null>(null);
+  const expiresAtRef = useRef<Date | null>(null);
+  const serverTimeOffsetRef = useRef<number>(0);
 
-  // reset time when time limit changes
+  // calculate server time offset on mount or when serverTime changes
   useEffect(() => {
-    setTimeRemaining(timeLimitInMinutes * 60);
-  }, [timeLimitInMinutes]);
+    if (serverTime) {
+      const serverDate = new Date(serverTime);
+      const localDate = new Date();
+      serverTimeOffsetRef.current = serverDate.getTime() - localDate.getTime();
+    }
+  }, [serverTime]);
+
+  // initialize expiration time
+  useEffect(() => {
+    if (expiresAt) {
+      expiresAtRef.current = new Date(expiresAt);
+
+      const now = Date.now() + serverTimeOffsetRef.current;
+      const remaining = Math.max(0, Math.floor((expiresAtRef.current.getTime() - now) / 1000));
+      setTimeRemaining(remaining);
+
+      if (remaining === 0) {
+        setIsTimeUp(true);
+      }
+    } else {
+      setTimeRemaining(timeLimitInMinutes * 60);
+    }
+  }, [expiresAt, timeLimitInMinutes]);
 
   // initialize web worker
   useEffect(() => {
@@ -31,8 +61,21 @@ const useQuizTimer = ({ timeLimitInMinutes }: UseQuizTimerProps): UseQuizTimerRe
 
     timerWorker.onmessage = () => {
       setTimeRemaining((prev) => {
-        const newTime = Math.max(0, prev - 1);
+        // recalculate based on server time to prevent drift
+        if (expiresAtRef.current) {
+          const now = Date.now() + serverTimeOffsetRef.current;
+          const remaining = Math.max(0, Math.floor((expiresAtRef.current.getTime() - now) / 1000));
 
+          if (remaining === 0) {
+            timerWorker.postMessage({ action: 'stop' });
+            setIsRunning(false);
+            setIsTimeUp(true);
+          }
+          return remaining;
+        }
+
+        // fallback to countdown
+        const newTime = Math.max(0, prev - 1);
         if (newTime === 0) {
           timerWorker.postMessage({ action: 'stop' });
           setIsRunning(false);
@@ -45,6 +88,7 @@ const useQuizTimer = ({ timeLimitInMinutes }: UseQuizTimerProps): UseQuizTimerRe
     return () => {
       timerWorker.postMessage({ action: 'stop' });
       timerWorker.terminate();
+      workerRef.current = null;
     };
   }, []);
 
@@ -53,32 +97,23 @@ const useQuizTimer = ({ timeLimitInMinutes }: UseQuizTimerProps): UseQuizTimerRe
 
   // visibility change for background sync
   useEffect(() => {
-    if (isVisible) {
-      if (isRunning && lastVisibleTimeRef.current && startTimeRef.current) {
-        const now = Date.now();
-        const elapsedWhileHidden = Math.floor((now - lastVisibleTimeRef.current) / 1000);
+    if (isVisible && isRunning && expiresAtRef.current) {
+      // recalculate time remaining when page becomes visible
+      const now = Date.now() + serverTimeOffsetRef.current;
+      const remaining = Math.max(0, Math.floor((expiresAtRef.current.getTime() - now) / 1000));
 
-        setTimeRemaining((prev) => {
-          const newTime = Math.max(0, prev - elapsedWhileHidden);
+      setTimeRemaining(remaining);
 
-          if (newTime === 0 && workerRef.current) {
-            workerRef.current.postMessage({ action: 'stop' });
-            setIsRunning(false);
-            setIsTimeUp(true);
-          }
-          return newTime;
-        });
+      if (remaining === 0 && workerRef.current) {
+        workerRef.current.postMessage({ action: 'stop' });
+        setIsRunning(false);
+        setIsTimeUp(true);
       }
-      lastVisibleTimeRef.current = Date.now();
-    } else {
-      lastVisibleTimeRef.current = Date.now();
     }
   }, [isVisible, isRunning]);
 
   const startTimer = () => {
-    if (workerRef.current && !isRunning) {
-      startTimeRef.current = Date.now();
-      lastVisibleTimeRef.current = Date.now();
+    if (workerRef.current && !isRunning && timeRemaining > 0) {
       workerRef.current.postMessage({ action: 'start', interval: 1000 });
       setIsRunning(true);
     }
@@ -98,8 +133,7 @@ const useQuizTimer = ({ timeLimitInMinutes }: UseQuizTimerProps): UseQuizTimerRe
     setTimeRemaining(timeLimitInMinutes * 60);
     setIsRunning(false);
     setIsTimeUp(false);
-    startTimeRef.current = null;
-    lastVisibleTimeRef.current = null;
+    expiresAtRef.current = null;
   };
 
   return {

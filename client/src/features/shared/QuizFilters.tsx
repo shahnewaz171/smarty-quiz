@@ -57,7 +57,7 @@ const QuizFilters = ({
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
           {isLoading ? (
-            <MenuItem disabled className="!flex !place-content-center p-4">
+            <MenuItem disabled className="flex! place-content-center! p-4">
               <CircularProgress size={24} />
             </MenuItem>
           ) : (

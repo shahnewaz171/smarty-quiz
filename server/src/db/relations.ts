@@ -1,11 +1,20 @@
 import { relations } from 'drizzle-orm';
-import { session, users, account, quiz, quizAttempt, question } from './schema.js';
+import {
+  session,
+  users,
+  account,
+  quiz,
+  quizAttempt,
+  question,
+  activeQuizSession
+} from './schema.js';
 
 export const userRelations = relations(users, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
   quizzesCreated: many(quiz),
-  quizAttempts: many(quizAttempt)
+  quizAttempts: many(quizAttempt),
+  activeQuizSessions: many(activeQuizSession)
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -45,6 +54,17 @@ export const quizAttemptRelations = relations(quizAttempt, ({ one }) => ({
   }),
   user: one(users, {
     fields: [quizAttempt.userId],
+    references: [users.id]
+  })
+}));
+
+export const activeQuizSessionRelations = relations(activeQuizSession, ({ one }) => ({
+  quiz: one(quiz, {
+    fields: [activeQuizSession.quizId],
+    references: [quiz.id]
+  }),
+  user: one(users, {
+    fields: [activeQuizSession.userId],
     references: [users.id]
   })
 }));

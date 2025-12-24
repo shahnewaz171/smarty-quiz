@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Alert, Box, Card, CardContent, Link, Stack, Typography } from '@mui/material';
+import { Box, Card, CardContent, Link, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink } from 'react-router';
@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/form/Input';
 import { signUp } from '@/lib/auth/better-auth/client';
+import { showNotification } from '@/lib/sonner';
 
 const registerSchema = z
   .object({
@@ -24,7 +25,6 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 const Register = () => {
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -36,7 +36,6 @@ const Register = () => {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
-    setError(null);
     setIsLoading(true);
 
     await signUp.email(data, {
@@ -46,7 +45,7 @@ const Register = () => {
       },
       onError(err) {
         const { statusText, message } = err.error;
-        setError(message || statusText || 'An error occurred during sign up');
+        showNotification(message || statusText || 'An error occurred during sign up', 'error');
       }
     });
 
@@ -72,12 +71,6 @@ const Register = () => {
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 4 }}>
             Sign up to get started with Smarty Quiz
           </Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <Stack spacing={3}>

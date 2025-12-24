@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { eq, desc, asc, ilike, or, and, count } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { quiz, quizAttempt } from '../db/schema.js';
+import { quiz, quizAttempt, activeQuizSession } from '../db/schema.js';
 
 const router = Router();
 
@@ -43,10 +43,27 @@ router.get('/', async (req: Request, res: Response) => {
       .from(quiz)
       .where(eq(quiz.status, 'published'));
 
+    // all attempt counts in a single query if user is authenticated
+    let attemptCounts: Record<string, number> = {};
+    if (req.user?.id) {
+      const attempts = await db.query.quizAttempt.findMany({
+        where: eq(quizAttempt.userId, req.user.id),
+        columns: { quizId: true }
+      });
+
+      // count attempts per quiz
+      attemptCounts = attempts.reduce((acc, attempt) => {
+        acc[attempt.quizId] = (acc[attempt.quizId] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+    }
+
     const result = quizzes.map((q) => ({
       ...q,
       questionCount: q.questions.length,
-      questions: undefined
+      questions: q.questions,
+      attemptCount: attemptCounts[q.id] || 0,
+      maxAttempts: 3
     }));
 
     return res.json({
@@ -103,13 +120,56 @@ router.get('/:id', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Quiz not found' });
     }
 
+    // check if user has an active session and get attempt count
+    let activeSession = null;
+    let attemptCount = 0;
+    const userId = req.user?.id;
+
+    if (userId) {
+      activeSession = await db.query.activeQuizSession.findFirst({
+        where: and(
+          eq(activeQuizSession.quizId, req.params.id),
+          eq(activeQuizSession.userId, userId)
+        )
+      });
+
+      // delete expired session
+      if (activeSession && new Date(activeSession.expiresAt) < new Date()) {
+        await db
+          .delete(activeQuizSession)
+          .where(
+            and(eq(activeQuizSession.quizId, req.params.id), eq(activeQuizSession.userId, userId))
+          );
+        activeSession = null;
+      }
+
+      // user's attempt count for this quiz
+      const attempts = await db.query.quizAttempt.findMany({
+        where: and(eq(quizAttempt.quizId, req.params.id), eq(quizAttempt.userId, userId))
+      });
+      attemptCount = attempts.length;
+    }
+
     const sanitized = quizData.questions.map((q) => ({
       ...q,
-      correctAnswer: undefined,
-      explanation: undefined
+      correctAnswer: null,
+      explanation: null
     }));
+    const { id, startedAt, expiresAt } = activeSession || {};
 
-    return res.json({ ...quizData, questions: sanitized });
+    return res.json({
+      ...quizData,
+      questions: sanitized,
+      attemptCount,
+      maxAttempts: 3,
+      activeSession: id
+        ? {
+            id,
+            startedAt,
+            expiresAt
+          }
+        : null
+    });
   } catch (error) {
     console.error('Error fetching quiz:', error);
     return res.status(500).json({ error: 'Failed to fetch quiz' });
@@ -120,6 +180,13 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/:id/submit', async (req: Request, res: Response) => {
   try {
     const { answers, startedAt } = req.body;
+
+    if (!startedAt || isNaN(Date.parse(startedAt))) {
+      return res.status(400).json({
+        error: 'Invalid request body',
+        message: 'startedAt must be a valid ISO date string'
+      });
+    }
 
     const quizData = await db.query.quiz.findFirst({
       where: eq(quiz.id, req.params.id),
@@ -159,6 +226,13 @@ router.post('/:id/submit', async (req: Request, res: Response) => {
       })
       .returning();
 
+    // delete active session after submission
+    await db
+      .delete(activeQuizSession)
+      .where(
+        and(eq(activeQuizSession.quizId, req.params.id), eq(activeQuizSession.userId, req.user!.id))
+      );
+
     const attemptWithDetails = await db.query.quizAttempt.findFirst({
       where: eq(quizAttempt.id, attempt.id),
       with: {
@@ -175,10 +249,89 @@ router.post('/:id/submit', async (req: Request, res: Response) => {
   }
 });
 
+// start quiz session
+router.post('/:id/start', async (req: Request, res: Response) => {
+  try {
+    const quizData = await db.query.quiz.findFirst({
+      where: eq(quiz.id, req.params.id)
+    });
+
+    if (!quizData) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    // check attempt count (max 3 attempts)
+    const attempts = await db.query.quizAttempt.findMany({
+      where: and(eq(quizAttempt.quizId, req.params.id), eq(quizAttempt.userId, req.user!.id))
+    });
+
+    if (attempts.length >= 3) {
+      return res.status(403).json({
+        error: 'Maximum attempts reached',
+        message: 'You have already taken this quiz 3 times. No more attempts allowed.'
+      });
+    }
+
+    // check if session already exists
+    const existing = await db.query.activeQuizSession.findFirst({
+      where: and(
+        eq(activeQuizSession.quizId, req.params.id),
+        eq(activeQuizSession.userId, req.user!.id)
+      )
+    });
+
+    if (existing) {
+      // delete if expired
+      if (new Date(existing.expiresAt) < new Date()) {
+        await db
+          .delete(activeQuizSession)
+          .where(
+            and(
+              eq(activeQuizSession.quizId, req.params.id),
+              eq(activeQuizSession.userId, req.user!.id)
+            )
+          );
+      } else {
+        // existing valid session
+        return res.json({
+          id: existing.id,
+          startedAt: existing.startedAt,
+          expiresAt: existing.expiresAt,
+          serverTime: new Date()
+        });
+      }
+    }
+
+    // create new session
+    const startedAt = new Date();
+    const expiresAt = new Date(startedAt.getTime() + quizData.timeLimit! * 60 * 1000);
+
+    const [session] = await db
+      .insert(activeQuizSession)
+      .values({
+        quizId: req.params.id,
+        userId: req.user!.id,
+        startedAt,
+        expiresAt
+      })
+      .returning();
+
+    return res.json({
+      id: session.id,
+      startedAt: session.startedAt,
+      expiresAt: session.expiresAt,
+      serverTime: new Date()
+    });
+  } catch (error) {
+    console.error('Error starting quiz session:', error);
+    return res.status(500).json({ error: 'Failed to start quiz session' });
+  }
+});
+
 // list user attempts
 router.get('/attempts/user/:userId', async (req: Request, res: Response) => {
   try {
-    const userRole = req.user?.role as string[] | string | undefined;
+    const userRole = req.user?.role as string[] | string | null;
     const roles = Array.isArray(userRole) ? userRole : [userRole || ''];
     const isAdmin = roles.includes('admin');
 
@@ -227,7 +380,7 @@ router.get('/attempt/:attemptId', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Attempt not found' });
     }
 
-    const userRole = req.user?.role as string[] | string | undefined;
+    const userRole = req.user?.role as string[] | string | null;
     const roles = Array.isArray(userRole) ? userRole : [userRole || ''];
     const isAdmin = roles.includes('admin');
 
@@ -235,7 +388,19 @@ router.get('/attempt/:attemptId', async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Forbidden - Can only access your own attempts' });
     }
 
-    return res.json(attempt);
+    // attempt count for the quiz
+    const attempts = await db.query.quizAttempt.findMany({
+      where: and(eq(quizAttempt.quizId, attempt.quizId), eq(quizAttempt.userId, req.user!.id))
+    });
+
+    return res.json({
+      ...attempt,
+      quiz: {
+        ...attempt.quiz,
+        attemptCount: attempts.length,
+        maxAttempts: 3
+      }
+    });
   } catch (error) {
     console.error('Error fetching attempt:', error);
     return res.status(500).json({ error: 'Failed to fetch attempt' });

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Box,
   Card,
@@ -12,16 +13,32 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import TimerIcon from '@mui/icons-material/Timer';
 import QuizIcon from '@mui/icons-material/Quiz';
 import { useNavigate } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { fetchQuizzes } from '@/features/api/quiz';
+import { fetchQuizzes, startQuizSession } from '@/features/api/quiz';
+import { showNotification } from '@/lib/sonner';
 import { difficultyColors } from '@/features/admin/helpers';
+import useQuizAttempts from '@/features/quiz/hooks/useQuizAttempts';
+
 import { QuizCardSkeleton } from '@/components/loader/skeletons';
 import EmptyState from '@/components/ui/EmptyState';
-import type { Difficulty, QuizListProps, QuizListResponse } from '@/types/Quiz';
+import type { Difficulty, QuizListProps, QuizListResponse, Quiz } from '@/types/Quiz';
+import { MaxAttemptsModal, StartQuizModal } from '@/features/quiz/components/modals/quiz';
 
 const QuizList = ({ searchQuery, selectedDifficulty, selectedCategory }: QuizListProps) => {
+  const [startQuizInfo, setStartQuizInfo] = useState<Quiz | null>(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const {
+    id: startQuizId,
+    title: startQuizTitle,
+    questions: startQuizQuestions,
+    timeLimit: startQuizTimeLimit
+  } = startQuizInfo || {};
+
+  const { canAttempt, isMaxAttemptsReached, attemptsRemaining, attemptCount } =
+    useQuizAttempts(startQuizInfo);
 
   //  query filters
   const filters = {
@@ -37,6 +54,24 @@ const QuizList = ({ searchQuery, selectedDifficulty, selectedCategory }: QuizLis
   });
   const { data: quizzes = [], meta_data } = (quizzesData as QuizListResponse) || {};
   const { total_rows } = meta_data || {};
+
+  // start quiz session mutation
+  const startQuizMutation = useMutation({
+    mutationFn: (id: string) => startQuizSession(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['quizzes', 'detail', startQuizId] });
+      showNotification('Quiz started successfully!', 'success');
+      navigate(`/quiz/${startQuizId}`);
+    },
+    onError: (err: Error) => {
+      const message = err.message || 'Failed to start quiz';
+      showNotification(message, 'error');
+
+      if (message.includes('Maximum attempts')) {
+        setStartQuizInfo(null);
+      }
+    }
+  });
 
   if (isLoading) {
     return (
@@ -64,8 +99,14 @@ const QuizList = ({ searchQuery, selectedDifficulty, selectedCategory }: QuizLis
     );
   }
 
-  const handleStartQuiz = (quizId: string) => {
-    navigate(`/quiz/${quizId}`);
+  const handleOpenStartQuizModal = (quiz: Quiz | null) => {
+    setStartQuizInfo(quiz);
+  };
+
+  const handleStartQuiz = () => {
+    if (startQuizId) {
+      startQuizMutation.mutate(startQuizId);
+    }
   };
 
   return (
@@ -138,7 +179,7 @@ const QuizList = ({ searchQuery, selectedDifficulty, selectedCategory }: QuizLis
                     fullWidth
                     variant="contained"
                     startIcon={<PlayArrowIcon />}
-                    onClick={() => handleStartQuiz(quiz.id)}
+                    onClick={() => handleOpenStartQuizModal(quiz)}
                   >
                     Start Quiz
                   </Button>
@@ -148,6 +189,24 @@ const QuizList = ({ searchQuery, selectedDifficulty, selectedCategory }: QuizLis
           })}
         </Box>
       )}
+
+      {/* modals */}
+      <MaxAttemptsModal
+        isOpen={isMaxAttemptsReached && !!startQuizId}
+        attemptCount={attemptCount}
+        onClose={() => handleOpenStartQuizModal(null)}
+      />
+
+      <StartQuizModal
+        isOpen={!!startQuizId && canAttempt}
+        quizTitle={startQuizTitle || ''}
+        questionCount={startQuizQuestions?.length || 0}
+        timeLimit={startQuizTimeLimit || 0}
+        attemptsRemaining={attemptsRemaining}
+        isLoading={startQuizMutation.isPending}
+        onClose={() => handleOpenStartQuizModal(null)}
+        onConfirm={handleStartQuiz}
+      />
     </>
   );
 };

@@ -12,11 +12,13 @@ import {
 } from '@mui/material';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import HistoryIcon from '@mui/icons-material/History';
+import QuizIcon from '@mui/icons-material/Quiz';
 
 import { useAuth, useRole } from '@/lib/auth/better-auth/hooks';
 import { signOut } from '@/lib/auth/better-auth/client';
 import Logo from '@/components/icons/Logo';
 import UserMenu from '@/layouts/user/UserMenu';
+import { showNotification } from '@/lib/sonner';
 
 interface NavigationButtonsProps {
   currentPath: string;
@@ -28,6 +30,19 @@ const NavigationButtons = ({ currentPath, onNavigate }: NavigationButtonsProps) 
 
   return (
     <>
+      <Button
+        color="inherit"
+        startIcon={<QuizIcon />}
+        onClick={() => onNavigate('/quiz')}
+        aria-label="View available quizzes"
+        aria-current={currentPath === '/quiz' ? 'page' : undefined}
+        sx={{
+          mr: 2,
+          bgcolor: currentPath === '/quiz' ? 'rgba(255,255,255,0.1)' : 'transparent'
+        }}
+      >
+        Quiz Panel
+      </Button>
       {hasRole('admin') && (
         <Button
           color="inherit"
@@ -77,16 +92,20 @@ const UserLayout = () => {
 
   const handleLogout = () => {
     startTransition(async () => {
-      await signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            handleMenuClose();
-          },
-          onError: (error) => {
-            console.error('Sign out failed:', error);
+      try {
+        await signOut({
+          fetchOptions: {
+            onSuccess: () => {
+              handleMenuClose();
+            },
+            onError: (error) => {
+              showNotification(error instanceof Error ? error.message : 'Sign out failed', 'error');
+            }
           }
-        }
-      });
+        });
+      } catch {
+        showNotification('An unexpected error occurred. Please try again.', 'error');
+      }
     });
   };
 
