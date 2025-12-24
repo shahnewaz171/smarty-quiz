@@ -43,3 +43,4 @@ server/src/db/migrations/
 
 # Temporary documentation
 SERVER_SETUP.md
+MAILGUN_SETUP.md

@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { createMailgunClient } from '../lib/mailgun.js';
 
 interface EmailOptions {
   to: string;
@@ -6,59 +6,35 @@ interface EmailOptions {
   html: string;
 }
 
-/**
- * create email transporter
- * supports OAuth2 for Gmail
- * for development: Use Ethereal (fake SMTP service)
- * production: Gmail OAuth2
- */
-const createTransporter = () => {
-  if (process.env.NODE_ENV !== 'production') {
-    return nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.ETHEREAL_USER,
-        pass: process.env.ETHEREAL_PASS
-      }
-    });
-  }
-
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      type: 'OAuth2',
-      user: process.env.GMAIL_USER,
-      clientId: process.env.GMAIL_OAUTH2_CLIENT_ID,
-      clientSecret: process.env.GMAIL_OAUTH2_CLIENT_SECRET,
-      refreshToken: process.env.GMAIL_OAUTH2_REFRESH_TOKEN
-    }
-  });
-};
-
 // send email
 export const sendEmail = async ({ to, subject, html }: EmailOptions): Promise<void> => {
   try {
-    const transporter = createTransporter();
+    const mg = createMailgunClient();
+    const domain = process.env.MAILGUN_DOMAIN || '';
 
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to,
+    if (!domain) {
+      throw new Error('MAILGUN_DOMAIN is not configured');
+    }
+
+    const messageData = {
+      from: process.env.EMAIL_FROM || ``,
+      to: [to],
       subject,
       html
-    });
+    };
+
+    const response = await mg.messages.create(domain, messageData);
 
     if (process.env.NODE_ENV !== 'production') {
-      console.log('📧 Email sent:', {
-        messageId: info.messageId,
+      console.log('📧 Email sent via Mailgun:', {
+        id: response.id,
+        message: response.message,
         to,
-        subject,
-        previewURL: nodemailer.getTestMessageUrl(info)
+        subject
       });
     }
   } catch (error) {
-    console.error('Failed to send email:', error);
+    console.error('Failed to send email via Mailgun:', error);
     throw new Error('Failed to send email');
   }
 };

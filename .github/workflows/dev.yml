@@ -42,3 +42,7 @@ jobs:
       - name: Build Server
         if: ${{ needs.detect-changes.outputs.server == 'true' }}
         run: pnpm --filter server run build
+
+      - name: Build Client
+        if: ${{ needs.detect-changes.outputs.client == 'true' }}
+        run: pnpm --filter client run build
