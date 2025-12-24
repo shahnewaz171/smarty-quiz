@@ -41,17 +41,17 @@ jobs:
         run: |
 
           # install dependencies
-          pnpm --filter server install
+          pnpm --filter ./server install
 
           # build the server
-          pnpm --filter server run build
+          pnpm --filter ./server run build
 
       - name: Build Client
         if: ${{ needs.detect-changes.outputs.client == 'true' }}
         run: |
 
           # install dependencies
-          pnpm --filter client install
+          pnpm --filter ./client install
 
           # build the client
-          pnpm --filter client run build
+          pnpm --filter ./client run build
