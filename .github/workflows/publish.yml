@@ -55,6 +55,6 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
           npm install --global vercel@latest
-          vercel pull --yes --environment=production --token=$VERCEL_TOKEN
-          pnpm --filter client run build
-          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
+          vercel pull --yes --environment=production --token=$VERCEL_TOKEN --cwd ./client
+          vercel build --prod --token=$VERCEL_TOKEN --cwd ./client
+          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --cwd ./client
