@@ -66,7 +66,7 @@ app.use((req, res) => {
 
 // error handler
 app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.log('Server error:', err);
+  console.log('server error:', err);
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
