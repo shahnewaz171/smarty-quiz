@@ -52,9 +52,6 @@ jobs:
       - name: Deploy Client
         if: ${{ needs.detect-changes.outputs.client == 'true' }}
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          npm install --global vercel@latest
-          vercel pull --yes --environment=production --token=$VERCEL_TOKEN --cwd ./client
-          vercel build --prod --token=$VERCEL_TOKEN --cwd ./client
-          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --cwd ./client
+          curl -X POST $VERCEL_DEPLOY_HOOK
