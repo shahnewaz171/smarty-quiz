@@ -61,6 +61,7 @@ jobs:
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
           heroku_email: ${{ secrets.EMAIL }}
           branch: "master"
+          appdir: "server"
           dontautocreate: true
 
       # build and deploy client to vercel
