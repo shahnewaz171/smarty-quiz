@@ -59,7 +59,7 @@ export const emailTemplates = {
               padding: 20px;
             }
             .container {
-              background-color: #ffffff;
+              background-color: #ffffff !important;
               border-radius: 8px;
               padding: 40px;
               box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -75,18 +75,18 @@ export const emailTemplates = {
             .button {
               display: inline-block;
               padding: 12px 30px;
-              background-color: #1976d2;
-              color: #ffffff;
+              background-color: #1976d2 !important;
+              color: #ffffff !important;
               text-decoration: none;
               border-radius: 5px;
               margin: 20px 0;
               font-weight: 500;
             }
             .button:hover {
-              background-color: #1565c0;
+              background-color: #1565c0 !important;
             }
             .info-box {
-              background-color: #f5f5f5;
+              background-color: #f5f5f5 !important;
               border-left: 4px solid #ff9800;
               padding: 15px;
               margin: 20px 0;
@@ -97,7 +97,7 @@ export const emailTemplates = {
               padding-top: 20px;
               border-top: 1px solid #e0e0e0;
               font-size: 12px;
-              color: #666;
+              color: #666 !important;
               text-align: center;
             }
           </style>
@@ -152,7 +152,7 @@ export const emailTemplates = {
               padding: 20px;
             }
             .container {
-              background-color: #ffffff;
+              background-color: #ffffff !important;
               border-radius: 8px;
               padding: 40px;
               box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -171,14 +171,14 @@ export const emailTemplates = {
               margin-bottom: 20px;
             }
             .info-box {
-              background-color: #e8f5e9;
+              background-color: #e8f5e9 !important;
               border-left: 4px solid #4caf50;
               padding: 15px;
               margin: 20px 0;
               border-radius: 4px;
             }
             .security-tips {
-              background-color: #fff3e0;
+              background-color: #fff3e0 !important;
               border-left: 4px solid #ff9800;
               padding: 15px;
               margin: 20px 0;
@@ -189,7 +189,7 @@ export const emailTemplates = {
               padding-top: 20px;
               border-top: 1px solid #e0e0e0;
               font-size: 12px;
-              color: #666;
+              color: #666 !important;
               text-align: center;
             }
             ul {
