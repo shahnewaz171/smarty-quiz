@@ -18,8 +18,7 @@ const inputVariants = cva('', {
 });
 
 export interface InputProps
-  extends Omit<TextFieldProps, 'size'>,
-    VariantProps<typeof inputVariants> {
+  extends Omit<TextFieldProps, 'size'>, VariantProps<typeof inputVariants> {
   inputSize?: 'small' | 'medium' | 'large';
 }
 

@@ -1,0 +1,60 @@
+name: (Test) Production
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      server: ${{ steps.filter.outputs.server }}
+      client: ${{ steps.filter.outputs.client }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            server: ['server/**']
+            client: ['client/**']
+
+  process:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.server == 'true' || needs.detect-changes.outputs.client == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log Node & OS versions
+        run: |
+          node -v
+          cat /etc/os-release
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build Server
+        if: ${{ needs.detect-changes.outputs.server == 'true' }}
+        run: pnpm --filter server run build
+
+      # deploy client to vercel
+      - name: Deploy Client
+        if: ${{ needs.detect-changes.outputs.client == 'true' }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npm install --global vercel@latest
+          vercel pull --yes --environment=production --token=$VERCEL_TOKEN --cwd ./client
+          vercel build --prod --token=$VERCEL_TOKEN --cwd ./client
+          vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --cwd ./client
