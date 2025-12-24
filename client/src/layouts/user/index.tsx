@@ -1,24 +1,11 @@
-import { useState, useTransition } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router';
-import {
-  AppBar,
-  Box,
-  Toolbar,
-  Typography,
-  IconButton,
-  Avatar,
-  Container,
-  Button
-} from '@mui/material';
+import { Box, Container, Button, Typography } from '@mui/material';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import HistoryIcon from '@mui/icons-material/History';
 import QuizIcon from '@mui/icons-material/Quiz';
 
-import { useAuth, useRole } from '@/lib/auth/better-auth/hooks';
-import { signOut } from '@/lib/auth/better-auth/client';
-import Logo from '@/components/icons/Logo';
-import UserMenu from '@/layouts/user/UserMenu';
-import { showNotification } from '@/lib/sonner';
+import { useRole } from '@/lib/auth/better-auth/hooks';
+import TopBar from '@/layouts/TopBar';
 
 interface NavigationButtonsProps {
   currentPath: string;
@@ -76,38 +63,8 @@ const NavigationButtons = ({ currentPath, onNavigate }: NavigationButtonsProps) 
 };
 
 const UserLayout = () => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [isPending, startTransition] = useTransition();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = () => {
-    startTransition(async () => {
-      try {
-        await signOut({
-          fetchOptions: {
-            onSuccess: () => {
-              handleMenuClose();
-            },
-            onError: (error) => {
-              showNotification(error instanceof Error ? error.message : 'Sign out failed', 'error');
-            }
-          }
-        });
-      } catch {
-        showNotification('An unexpected error occurred. Please try again.', 'error');
-      }
-    });
-  };
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -115,37 +72,9 @@ const UserLayout = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static" component="header">
-        <Toolbar>
-          <Logo sx={{ mr: 2, fontSize: 32 }} />
-          <Typography variant="h6" component="h1" sx={{ flexGrow: 1, fontWeight: 600 }}>
-            Smarty Quiz
-          </Typography>
-
-          <NavigationButtons currentPath={location.pathname} onNavigate={handleNavigate} />
-
-          <IconButton
-            onClick={handleMenuOpen}
-            sx={{ p: 0 }}
-            aria-label="Open user menu"
-            aria-controls={anchorEl ? 'user-menu' : undefined}
-            aria-haspopup="true"
-            aria-expanded={anchorEl ? 'true' : undefined}
-          >
-            <Avatar alt={user?.name || 'User'} sx={{ bgcolor: 'secondary.main' }}>
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
-            </Avatar>
-          </IconButton>
-
-          <UserMenu
-            anchorEl={anchorEl}
-            onClose={handleMenuClose}
-            onLogout={handleLogout}
-            userName={user?.name}
-            isPending={isPending}
-          />
-        </Toolbar>
-      </AppBar>
+      <TopBar title="Smarty Quiz" showLogo>
+        <NavigationButtons currentPath={location.pathname} onNavigate={handleNavigate} />
+      </TopBar>
 
       <Container
         component="main"
