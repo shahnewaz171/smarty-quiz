@@ -36,9 +36,22 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Build Server
         if: ${{ needs.detect-changes.outputs.server == 'true' }}
-        run: pnpm --filter server run build
+        run: |
+
+          # install dependencies
+          pnpm --filter ./server install
+
+          # build the server
+          pnpm --filter ./server run build
+
+      - name: Build Client
+        if: ${{ needs.detect-changes.outputs.client == 'true' }}
+        run: |
+
+          # install dependencies
+          pnpm --filter ./client install
+
+          # build the client
+          pnpm --filter ./client run build

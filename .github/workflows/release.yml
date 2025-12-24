@@ -21,7 +21,6 @@ jobs:
 
   process:
     needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.server == 'true' || needs.detect-changes.outputs.client == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Log Node & OS versions
@@ -41,17 +40,41 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Build Server
+      # server deployment
+      - name: Build & Deploy Server
         if: ${{ needs.detect-changes.outputs.server == 'true' }}
-        run: pnpm --filter server run build
+        run: |
 
-      # deploy client to vercel
-      - name: Deploy Client
+          # install dependencies
+          pnpm --filter ./server install
+
+          # build the server
+          pnpm --filter ./server run build
+
+          # install Heroku CLI
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+      - uses: akhileshns/heroku-deploy@v3.14.15
+        if: ${{ needs.detect-changes.outputs.server == 'true' }}
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.EMAIL }}
+          branch: "master"
+          dontautocreate: true
+
+      # build and deploy client to vercel
+      - name: Build & Deploy Client
         if: ${{ needs.detect-changes.outputs.client == 'true' }}
         env:
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
+
+          # install dependencies
+          pnpm --filter ./client install
+
+          # build the client
+          pnpm --filter ./client run build
+
+          # trigger Vercel deploy hook
           curl -X POST $VERCEL_DEPLOY_HOOK

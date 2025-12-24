@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { createMailgunClient } from '../lib/mailgun.js';
 
 interface EmailOptions {
   to: string;
@@ -6,59 +6,35 @@ interface EmailOptions {
   html: string;
 }
 
-/**
- * create email transporter
- * supports OAuth2 for Gmail
- * for development: Use Ethereal (fake SMTP service)
- * production: Gmail OAuth2
- */
-const createTransporter = () => {
-  if (process.env.NODE_ENV !== 'production') {
-    return nodemailer.createTransport({
-      host: 'smtp.ethereal.email',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.ETHEREAL_USER,
-        pass: process.env.ETHEREAL_PASS
-      }
-    });
-  }
-
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      type: 'OAuth2',
-      user: process.env.GMAIL_USER,
-      clientId: process.env.GMAIL_OAUTH2_CLIENT_ID,
-      clientSecret: process.env.GMAIL_OAUTH2_CLIENT_SECRET,
-      refreshToken: process.env.GMAIL_OAUTH2_REFRESH_TOKEN
-    }
-  });
-};
-
 // send email
 export const sendEmail = async ({ to, subject, html }: EmailOptions): Promise<void> => {
   try {
-    const transporter = createTransporter();
+    const mg = createMailgunClient();
+    const domain = process.env.MAILGUN_DOMAIN || '';
 
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to,
+    if (!domain) {
+      throw new Error('MAILGUN_DOMAIN is not configured');
+    }
+
+    const messageData = {
+      from: process.env.EMAIL_FROM || ``,
+      to: [to],
       subject,
       html
-    });
+    };
+
+    const response = await mg.messages.create(domain, messageData);
 
     if (process.env.NODE_ENV !== 'production') {
-      console.log('📧 Email sent:', {
-        messageId: info.messageId,
+      console.log('📧 Email sent via Mailgun:', {
+        id: response.id,
+        message: response.message,
         to,
-        subject,
-        previewURL: nodemailer.getTestMessageUrl(info)
+        subject
       });
     }
   } catch (error) {
-    console.error('Failed to send email:', error);
+    console.error('Failed to send email via Mailgun:', error);
     throw new Error('Failed to send email');
   }
 };
@@ -83,7 +59,7 @@ export const emailTemplates = {
               padding: 20px;
             }
             .container {
-              background-color: #ffffff;
+              background-color: #ffffff !important;
               border-radius: 8px;
               padding: 40px;
               box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -99,18 +75,18 @@ export const emailTemplates = {
             .button {
               display: inline-block;
               padding: 12px 30px;
-              background-color: #1976d2;
-              color: #ffffff;
+              background-color: #1976d2 !important;
+              color: #ffffff !important;
               text-decoration: none;
               border-radius: 5px;
               margin: 20px 0;
               font-weight: 500;
             }
             .button:hover {
-              background-color: #1565c0;
+              background-color: #1565c0 !important;
             }
             .info-box {
-              background-color: #f5f5f5;
+              background-color: #f5f5f5 !important;
               border-left: 4px solid #ff9800;
               padding: 15px;
               margin: 20px 0;
@@ -121,7 +97,7 @@ export const emailTemplates = {
               padding-top: 20px;
               border-top: 1px solid #e0e0e0;
               font-size: 12px;
-              color: #666;
+              color: #666 !important;
               text-align: center;
             }
           </style>
@@ -176,7 +152,7 @@ export const emailTemplates = {
               padding: 20px;
             }
             .container {
-              background-color: #ffffff;
+              background-color: #ffffff !important;
               border-radius: 8px;
               padding: 40px;
               box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -195,14 +171,14 @@ export const emailTemplates = {
               margin-bottom: 20px;
             }
             .info-box {
-              background-color: #e8f5e9;
+              background-color: #e8f5e9 !important;
               border-left: 4px solid #4caf50;
               padding: 15px;
               margin: 20px 0;
               border-radius: 4px;
             }
             .security-tips {
-              background-color: #fff3e0;
+              background-color: #fff3e0 !important;
               border-left: 4px solid #ff9800;
               padding: 15px;
               margin: 20px 0;
@@ -213,7 +189,7 @@ export const emailTemplates = {
               padding-top: 20px;
               border-top: 1px solid #e0e0e0;
               font-size: 12px;
-              color: #666;
+              color: #666 !important;
               text-align: center;
             }
             ul {

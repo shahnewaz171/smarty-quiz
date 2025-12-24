@@ -1,11 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { auth } from './auth.js';
+import { auth } from './lib/auth.js';
 import { requireAuth, requireAdmin } from './middleware/auth.js';
 import quizRoutes from './routes/quiz.js';
 import adminRoutes from './routes/admin.js';
-import oauthRoutes from './routes/oauth.js';
 import { HeadersInit } from './types/index.js';
 
 const app = express();
@@ -54,9 +53,6 @@ app.all('/api/auth/**', async (req, res) => {
 // protected routes
 app.use('/api/quizzes', requireAuth, quizRoutes);
 app.use('/api/admin', requireAdmin, adminRoutes);
-
-// OAuth2 routes for Gmail setup (development/setup only)
-app.use('/api/oauth', oauthRoutes);
 
 // health check
 app.get('/health', (req, res) => {
