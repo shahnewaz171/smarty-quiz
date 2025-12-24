@@ -1,0 +1,32 @@
+name: (publish) Release
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  Release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Setup Node 22.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22.x"
+
+      - name: Install PNPM
+        run: npm i -g pnpm
+
+      - name: Install dependencies
+        run: pnpm i
+
+      - name: Checking Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
