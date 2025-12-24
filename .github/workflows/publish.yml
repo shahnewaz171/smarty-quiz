@@ -42,7 +42,7 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Build Server
         if: ${{ needs.detect-changes.outputs.server == 'true' }}
