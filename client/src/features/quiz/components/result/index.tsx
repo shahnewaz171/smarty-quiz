@@ -1,7 +1,18 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { Box, Card, CardContent, Typography, Button, Chip, Paper, Divider } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Chip,
+  Paper,
+  Divider,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import HomeIcon from '@mui/icons-material/Home';
@@ -21,6 +32,9 @@ const QuizResult = () => {
   const [showMaxAttemptsModal, setShowMaxAttemptsModal] = useState(false);
   const [showRetakeConfirmModal, setShowRetakeConfirmModal] = useState(false);
   const navigate = useNavigate();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const {
     data: result,
@@ -91,7 +105,7 @@ const QuizResult = () => {
         ) : (
           <CancelIcon sx={{ fontSize: 80, mb: 2 }} />
         )}
-        <Typography variant="h3" gutterBottom>
+        <Typography variant={isMobile ? 'h4' : 'h3'} gutterBottom>
           {passed ? 'Congratulations!' : 'Better Luck Next Time'}
         </Typography>
         <Typography variant="h6" gutterBottom>
@@ -117,7 +131,7 @@ const QuizResult = () => {
                 Score
               </Typography>
               <Typography variant="h4" color="primary">
-                {percentage?.toFixed(1)}%
+                {percentage?.toFixed(0)}%
               </Typography>
             </Box>
             <Box>
@@ -152,7 +166,7 @@ const QuizResult = () => {
       <QuestionBreakdown questions={quiz?.questions} answers={answers} />
 
       {/* buttons */}
-      <Box sx={{ display: 'flex', gap: 2, mt: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 2, mt: 3 }}>
         <Button variant="outlined" startIcon={<HomeIcon />} onClick={handleBackToQuizzes}>
           Back to Quizzes
         </Button>

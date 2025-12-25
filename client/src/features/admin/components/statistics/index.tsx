@@ -97,7 +97,7 @@ const StatisticsView = () => {
                   Average Attempts per Quiz
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
-                  {averageAttemptsPerQuiz?.toFixed(1) || 0}
+                  {averageAttemptsPerQuiz?.toFixed(0) || 0}
                 </Typography>
               </Box>
             </Box>

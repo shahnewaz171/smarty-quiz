@@ -98,7 +98,7 @@ const QuizHistory = () => {
                     </Typography>
                   </Box>
 
-                  <Stack direction="row" spacing={2} alignItems="center">
+                  <Stack direction="row" alignItems="center" className="flex-wrap gap-3.5">
                     <Paper
                       sx={{
                         p: 2,
