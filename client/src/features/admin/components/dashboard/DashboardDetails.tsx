@@ -55,7 +55,7 @@ const DashboardDetails = ({ statistics }: DashboardDetailsProps) => {
         />
         <StatisticCard
           title="Average Score"
-          value={`${averageScore.toFixed(1)}%`}
+          value={`${averageScore.toFixed(0)}%`}
           icon={TrendingUpIcon}
           color="#9c27b0"
         />
