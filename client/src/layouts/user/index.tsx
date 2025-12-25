@@ -12,10 +12,15 @@ import Footer from '@/layouts/Footer';
 
 const drawerWidth = 240;
 
-const getMenuItems = (isMobile: boolean) => [
+const getMenuItems = (isShowAdminPanel: boolean) => [
   { text: 'Quiz', icon: <QuizIcon />, path: '/quiz' },
   { text: 'History', icon: <BarChartIcon />, path: '/history' },
-  { text: 'Admin Panel', icon: <AdminPanelSettingsIcon />, path: '/admin', isShow: isMobile }
+  {
+    text: 'Admin Panel',
+    icon: <AdminPanelSettingsIcon />,
+    path: '/admin',
+    isShow: isShowAdminPanel
+  }
 ];
 
 const UserLayout = () => {
@@ -25,6 +30,8 @@ const UserLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { hasRole } = useRole();
+
+  const isShowAdminPanel = hasRole('admin') && isMobile;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -93,7 +100,7 @@ const UserLayout = () => {
           <DrawerContent
             location={location}
             isMobile={isMobile}
-            menuItems={getMenuItems(isMobile)}
+            menuItems={getMenuItems(isShowAdminPanel)}
             onNavigate={handleNavigate}
           />
         </Drawer>
@@ -110,7 +117,7 @@ const UserLayout = () => {
         >
           <DrawerContent
             location={location}
-            menuItems={getMenuItems(isMobile)}
+            menuItems={getMenuItems(isShowAdminPanel)}
             onNavigate={handleNavigate}
           />
         </Drawer>
