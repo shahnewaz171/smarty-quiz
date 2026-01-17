@@ -1,13 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Card, CardContent, Link, Stack, Typography } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
 
+import { showNotification } from '@/lib/sonner';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/form/Input';
-import { showNotification } from '@/lib/sonner';
+import InvalidTokenMessage from '@/features/authentication/components/reset-password/InvalidTokenMessage';
 
 const resetPasswordSchema = z
   .object({
@@ -27,12 +28,6 @@ const ResetPassword = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!token) {
-      showNotification('Invalid or missing reset token', 'error');
-    }
-  }, [token]);
 
   const {
     register,
@@ -66,6 +61,7 @@ const ResetPassword = () => {
       });
 
       if (response.ok) {
+        showNotification('Password has been reset successfully!', 'success');
         navigate('/login', {
           state: { message: 'Password reset successful. Please login with your new password.' }
         });
@@ -79,6 +75,10 @@ const ResetPassword = () => {
       setIsLoading(false);
     }
   };
+
+  if (!token) {
+    return <InvalidTokenMessage />;
+  }
 
   return (
     <Box

@@ -40,6 +40,7 @@ const Register = () => {
 
     await signUp.email(data, {
       onSuccess() {
+        showNotification('Account created successfully!', 'success');
         // const { user } = res.data || {};
         // console.log('Sign up successful:', user);
       },
