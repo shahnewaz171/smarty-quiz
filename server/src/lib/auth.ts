@@ -60,7 +60,7 @@ export const auth = betterAuth({
       session_token: {
         name: 'session_token',
         attributes: {
-          sameSite: 'lax',
+          sameSite: isProduction ? 'none' : 'lax',
           secure: isProduction
         }
       }
