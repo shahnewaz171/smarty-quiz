@@ -5,7 +5,7 @@
   "rangeStrategy": "auto",
   "ignoreUnstable": true,
   "minimumReleaseAge": "3 days",
-  "schedule": ["after 9am and before 10pm every weekday"],
+  "schedule": ["after 9am and before 11pm every weekday"],
   "packageRules": [
     {
       "matchDepTypes": ["devDependencies"],
