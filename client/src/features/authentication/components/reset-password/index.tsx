@@ -66,6 +66,7 @@ const ResetPassword = () => {
       });
 
       if (response.ok) {
+        showNotification('Password has been reset successfully!', 'success');
         navigate('/login', {
           state: { message: 'Password reset successful. Please login with your new password.' }
         });

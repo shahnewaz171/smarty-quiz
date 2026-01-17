@@ -72,7 +72,8 @@ const ForgotPassword = () => {
               Check Your Email
             </Typography>
             <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 4 }}>
-              If this email exists in our system, check your email for the reset link
+              If this email address exists in our system, you’ll receive a password reset link in
+              your inbox shortly.
             </Typography>
 
             <Box sx={{ textAlign: 'center' }}>
@@ -103,7 +104,7 @@ const ForgotPassword = () => {
             Forgot Password
           </Typography>
           <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 4 }}>
-            Enter your email address and we&apos;ll send you a link to reset your password.
+            Enter your email address and we&apos;ll send you a password reset link.
           </Typography>
 
           <form onSubmit={handleSubmit(onSubmit)}>

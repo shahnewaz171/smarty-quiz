@@ -60,7 +60,7 @@ export const auth = betterAuth({
       session_token: {
         name: 'session_token',
         attributes: {
-          sameSite: isProduction ? 'none' : 'lax',
+          sameSite: 'lax', // 'lax' for better compatibility with incognito mode
           secure: isProduction
         }
       }

@@ -115,7 +115,7 @@ GMAIL_OAUTH2_REFRESH_TOKEN=${tokens.refresh_token || '(use existing one)'}</pre>
             <ul>
               <li><strong>Access Token</strong>: Expires in ~1 hour (auto-refreshed by nodemailer)</li>
               <li><strong>Refresh Token</strong>: Keep this safe! It's used to get new access tokens</li>
-              <li>If refresh token is not shown, you may already have one. Check your existing .env</li>
+              <li>If the refresh token is not shown, you may already have one in your existing .env file</li>
               <li>After adding to .env, restart your server</li>
             </ul>
 
