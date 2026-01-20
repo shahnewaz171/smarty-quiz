@@ -34,7 +34,7 @@ importers:
         version: 168.0.0
       mailgun.js:
         specifier: ^12.4.0
-        version: 12.4.0
+        version: 12.6.1
       nanoid:
         specifier: ^5.1.6
         version: 5.1.6
@@ -1351,8 +1351,8 @@ packages:
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
-  mailgun.js@12.4.0:
-    resolution: {integrity: sha512-3Mwvwo02PUmFkW0zxSwvTjHBFCaMLb903RuQaEkTU8Z8medItb7Ey0K3XXLVDErArbEjPoRRqxPDdzWqXaokfQ==}
+  mailgun.js@12.6.1:
+    resolution: {integrity: sha512-ARVtEoXt0rkrnfHe0S//qvUgXTDPYi+LMaoWqKLu2IgnUGSVPmlQAHGOxP7VBvsgx9l/hQznk53ZeoYfdwXbGg==}
     engines: {node: '>=18.0.0'}
 
   math-intrinsics@1.1.0:
@@ -3229,7 +3229,7 @@ snapshots:
 
   lru-cache@10.4.3: {}
 
-  mailgun.js@12.4.0:
+  mailgun.js@12.6.1:
     dependencies:
       axios: 1.13.2
       base-64: 1.0.0
