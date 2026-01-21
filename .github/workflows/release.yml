@@ -11,8 +11,8 @@ jobs:
       server: ${{ steps.filter.outputs.server }}
       client: ${{ steps.filter.outputs.client }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         id: filter
         with:
           filters: |
@@ -29,14 +29,14 @@ jobs:
           cat /etc/os-release
 
       - name: Checkout source code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
         with:
           version: 10
 
       - name: Setup Node 22.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
 
@@ -54,7 +54,7 @@ jobs:
           # install Heroku CLI
           curl https://cli-assets.heroku.com/install.sh | sh
 
-      - uses: akhileshns/heroku-deploy@v3.14.15
+      - uses: akhileshns/heroku-deploy@e3eb99d45a8e2ec5dca08735e089607befa4bf28 # v3.14.15
         if: ${{ needs.detect-changes.outputs.server == 'true' }}
         with:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
